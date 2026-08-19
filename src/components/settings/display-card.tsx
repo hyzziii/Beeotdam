@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { SegmentedControl } from './segmented-control';
 
-import { HomeColors, HomeRadius, HomeSpacing } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 
 export type TempUnit = 'c' | 'f';
 export type ThemeMode = 'light' | 'dark' | 'auto';
@@ -54,17 +54,17 @@ export function DisplayCard({
 
 const styles = StyleSheet.create({
   card: {
-    padding: HomeSpacing.cardPad,
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.card,
+    padding: AppSpacing.cardPad,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.card,
     borderWidth: 1,
-    borderColor: HomeColors.cardBorder,
-    marginBottom: HomeSpacing.cardGap,
+    borderColor: AppColors.cardBorder,
+    marginBottom: AppSpacing.cardGap,
   },
   title: {
     fontSize: 14,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   row: {
     flexDirection: 'row',
@@ -78,11 +78,11 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   rowDescription: {
     marginTop: 2,
     fontSize: 10,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
 });

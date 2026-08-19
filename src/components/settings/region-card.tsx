@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors, HomeRadius, HomeSpacing } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { MAX_REGIONS, regions } from '@/data';
 
 export function RegionCard({
@@ -51,22 +51,22 @@ export function RegionCard({
 
 const styles = StyleSheet.create({
   card: {
-    padding: HomeSpacing.cardPad,
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.card,
+    padding: AppSpacing.cardPad,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.card,
     borderWidth: 1,
-    borderColor: HomeColors.cardBorder,
-    marginBottom: HomeSpacing.cardGap,
+    borderColor: AppColors.cardBorder,
+    marginBottom: AppSpacing.cardGap,
   },
   title: {
     fontSize: 14,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   subtitle: {
     marginTop: 3,
     fontSize: 11,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   list: {
     marginTop: 10,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   rowChecked: {
-    backgroundColor: HomeColors.accentSurface,
+    backgroundColor: AppColors.accentSurface,
   },
   rowBlocked: {
     opacity: 0.45,
@@ -93,24 +93,24 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontWeight: '600',
-    color: HomeColors.body,
+    color: AppColors.body,
   },
   nameChecked: {
     fontWeight: '800',
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   circle: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 1.5,
-    borderColor: HomeColors.track,
+    borderColor: AppColors.track,
     alignItems: 'center',
     justifyContent: 'center',
   },
   circleChecked: {
-    borderColor: HomeColors.accent,
-    backgroundColor: HomeColors.accent,
+    borderColor: AppColors.accent,
+    backgroundColor: AppColors.accent,
   },
   check: {
     fontSize: 12,

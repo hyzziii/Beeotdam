@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors, HomeRadius, HomeSpacing, pct } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing, pct } from '@/constants/app-theme';
 import { Dam, damStatusConfig, dams } from '@/data';
 
 /** Figma의 "한강 수계" 라벨에 맞춰 해당 수계의 댐만 노출한다. */
@@ -48,7 +48,7 @@ function DamRow({ dam }: { dam: Dam }) {
           </View>
 
           <Text
-            style={[styles.delta, { color: rising ? HomeColors.up : HomeColors.down }]}>
+            style={[styles.delta, { color: rising ? AppColors.up : AppColors.down }]}>
             {rising ? '▲' : '▼'} {Math.abs(delta).toFixed(1)}%
           </Text>
         </View>
@@ -59,40 +59,40 @@ function DamRow({ dam }: { dam: Dam }) {
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: HomeSpacing.cardGap,
+    marginBottom: AppSpacing.cardGap,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 4,
-    marginBottom: HomeSpacing.sectionHeaderGap,
+    marginBottom: AppSpacing.sectionHeaderGap,
   },
   sectionTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   sectionMeta: {
     fontSize: 11,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     padding: 14,
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.card,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.card,
     borderWidth: 1,
-    borderColor: HomeColors.cardBorder,
+    borderColor: AppColors.cardBorder,
     marginBottom: 8,
   },
   badge: {
     width: 44,
     height: 44,
-    borderRadius: HomeRadius.badge,
-    backgroundColor: HomeColors.accentSoft,
+    borderRadius: AppRadius.badge,
+    backgroundColor: AppColors.accentSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   level: {
     fontSize: 17,
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 6,
     borderRadius: 3,
-    backgroundColor: HomeColors.track,
+    backgroundColor: AppColors.track,
     overflow: 'hidden',
   },
   fill: {

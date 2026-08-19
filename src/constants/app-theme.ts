@@ -1,11 +1,11 @@
 /**
- * Home 화면 전용 디자인 토큰.
+ * 앱 공용 디자인 토큰. 홈·수자원·날씨·설정 네 화면이 모두 쓴다.
  *
- * `constants/theme.ts`의 Spacing(4/8/16/24/32/64)은 explore 화면과 웹 탭바가 함께 쓰고 있어
- * 건드릴 수 없고, Figma의 촘촘한 여백(6/10/14)을 표현하지도 못한다. 그래서 홈 전용으로 분리했다.
+ * `constants/theme.ts`의 Spacing(4/8/16/24/32/64)은 웹 탭바가 쓰고 있어 건드릴 수 없고,
+ * Figma의 촘촘한 여백(6/10/14)을 표현하지도 못해 이 파일을 따로 뒀다.
  */
 
-export const HomeColors = {
+export const AppColors = {
   screen: '#F4F8FC',
   card: '#FFFFFF',
   cardBorder: '#E9EFF6',
@@ -29,14 +29,14 @@ export const HomeColors = {
   down: '#F59E0B',
 } as const;
 
-export const HomeRadius = {
+export const AppRadius = {
   card: 16,
   badge: 13,
   chip: 10,
   bar: 5,
 } as const;
 
-export const HomeSpacing = {
+export const AppSpacing = {
   screenPad: 16,
   cardPad: 16,
   cardGap: 10,

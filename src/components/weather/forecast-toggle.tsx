@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors, HomeSpacing } from '@/constants/home-theme';
+import { AppColors, AppSpacing } from '@/constants/app-theme';
 
 export type ForecastMode = 'hourly' | 'weekly';
 
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     padding: 4,
     borderRadius: 14,
     backgroundColor: '#EDF2F8',
-    marginBottom: HomeSpacing.cardGap,
+    marginBottom: AppSpacing.cardGap,
   },
   segment: {
     flex: 1,
@@ -56,16 +56,16 @@ const styles = StyleSheet.create({
     borderRadius: 11,
   },
   segmentSelected: {
-    backgroundColor: HomeColors.card,
+    backgroundColor: AppColors.card,
   },
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   labelSelected: {
     fontWeight: '800',
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   pressed: {
     opacity: 0.6,

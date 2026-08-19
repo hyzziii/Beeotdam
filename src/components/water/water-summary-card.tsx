@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { HomeSpacing } from '@/constants/home-theme';
+import { AppSpacing } from '@/constants/app-theme';
 
 const RADIUS = 20;
 
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     paddingVertical: 18,
     paddingHorizontal: 12,
-    marginBottom: HomeSpacing.cardGap,
+    marginBottom: AppSpacing.cardGap,
   },
   row: {
     flexDirection: 'row',

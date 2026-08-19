@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors, HomeSpacing } from '@/constants/home-theme';
+import { AppColors, AppSpacing } from '@/constants/app-theme';
 import { DamFilter } from '@/lib/dam';
 
 const OPTIONS: { key: DamFilter; label: string }[] = [
@@ -45,27 +45,27 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: HomeSpacing.cardGap,
+    marginBottom: AppSpacing.cardGap,
   },
   chip: {
     paddingHorizontal: 16,
     paddingVertical: 7,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: HomeColors.cardBorder,
-    backgroundColor: HomeColors.card,
+    borderColor: AppColors.cardBorder,
+    backgroundColor: AppColors.card,
   },
   chipSelected: {
-    borderColor: HomeColors.accent,
+    borderColor: AppColors.accent,
   },
   label: {
     fontSize: 12,
     fontWeight: '600',
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   labelSelected: {
     fontWeight: '800',
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   pressed: {
     opacity: 0.6,

@@ -3,7 +3,7 @@ import { TabList, TabListProps, TabSlot, TabTrigger, TabTriggerSlotProps, Tabs }
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { HomeColors } from '@/constants/home-theme';
+import { AppColors } from '@/constants/app-theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -52,7 +52,7 @@ function TabButton({
   isFocused,
   ...props
 }: TabTriggerSlotProps & { icon: IconName; activeIcon: IconName; label: string }) {
-  const color = isFocused ? HomeColors.accentText : HomeColors.muted;
+  const color = isFocused ? AppColors.accentText : AppColors.muted;
 
   return (
     <Pressable
@@ -70,9 +70,9 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     paddingTop: 8,
-    backgroundColor: HomeColors.card,
+    backgroundColor: AppColors.card,
     borderTopWidth: 1,
-    borderTopColor: HomeColors.cardBorder,
+    borderTopColor: AppColors.cardBorder,
   },
   tab: {
     flex: 1,

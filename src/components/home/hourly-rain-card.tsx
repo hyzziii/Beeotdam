@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors, HomeRadius, HomeSpacing, RAIN_HIGHLIGHT } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing, RAIN_HIGHLIGHT } from '@/constants/app-theme';
 import { hourlyRain } from '@/data';
 
 const BAR_MAX_HEIGHT = 64;
@@ -18,8 +18,8 @@ export function HourlyRainCard() {
         </View>
 
         <View style={styles.legend}>
-          <LegendItem color={HomeColors.accent} label="강수확률" />
-          <LegendItem color={HomeColors.accentLegend} label="강수량" />
+          <LegendItem color={AppColors.accent} label="강수확률" />
+          <LegendItem color={AppColors.accentLegend} label="강수량" />
         </View>
       </View>
 
@@ -71,12 +71,12 @@ function LegendItem({ color, label }: { color: string; label: string }) {
 
 const styles = StyleSheet.create({
   card: {
-    padding: HomeSpacing.cardPad,
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.card,
+    padding: AppSpacing.cardPad,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.card,
     borderWidth: 1,
-    borderColor: HomeColors.cardBorder,
-    marginBottom: HomeSpacing.cardGap,
+    borderColor: AppColors.cardBorder,
+    marginBottom: AppSpacing.cardGap,
   },
   header: {
     flexDirection: 'row',
@@ -86,12 +86,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   subtitle: {
     marginTop: 3,
     fontSize: 11,
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   legend: {
     flexDirection: 'row',
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   },
   legendLabel: {
     fontSize: 9,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   chart: {
     // 위 기준 정렬이라 강수확률 줄이 가지런히 맞고, mm 라벨이 없는 컬럼(강수량 0)은
@@ -126,11 +126,11 @@ const styles = StyleSheet.create({
   prob: {
     fontSize: 10,
     fontWeight: '600',
-    color: HomeColors.faint,
+    color: AppColors.faint,
   },
   probActive: {
     fontWeight: '800',
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   barSlot: {
     height: BAR_MAX_HEIGHT,
@@ -139,29 +139,29 @@ const styles = StyleSheet.create({
   },
   bar: {
     width: 20,
-    borderRadius: HomeRadius.bar,
+    borderRadius: AppRadius.bar,
   },
   barActive: {
-    backgroundColor: HomeColors.accent,
+    backgroundColor: AppColors.accent,
   },
   barInactive: {
-    backgroundColor: HomeColors.track,
+    backgroundColor: AppColors.track,
   },
   amount: {
     marginTop: 7,
     fontSize: 9,
-    color: HomeColors.faint,
+    color: AppColors.faint,
   },
   amountActive: {
     fontWeight: '700',
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   hour: {
     marginTop: 4,
     fontSize: 10,
-    color: HomeColors.faint,
+    color: AppColors.faint,
   },
   hourActive: {
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
 });

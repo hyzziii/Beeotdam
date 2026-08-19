@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { DamFilterRow } from '@/components/water/dam-filter';
 import { DamCard } from '@/components/water/dam-card';
 import { WaterSummaryCard } from '@/components/water/water-summary-card';
-import { HomeColors, HomeSpacing } from '@/constants/home-theme';
+import { AppColors, AppSpacing } from '@/constants/app-theme';
 import { dams } from '@/data';
 import { DamFilter, cautionCount, filterDams, nationalAverageLevel, safeCount } from '@/lib/dam';
 
@@ -49,16 +49,16 @@ export default function WaterScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: HomeColors.screen,
+    backgroundColor: AppColors.screen,
   },
   container: {
-    padding: HomeSpacing.screenPad,
+    padding: AppSpacing.screenPad,
     paddingBottom: 40,
   },
   title: {
     fontSize: 20,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   metaRow: {
     flexDirection: 'row',
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontSize: 11,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   liveDot: {
     width: 6,
@@ -81,6 +81,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
     textAlign: 'center',
     fontSize: 12,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
 });

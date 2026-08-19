@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-import { HomeColors, HomeRadius, HomeSpacing } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 
 /** 접힌 상태에서 보여줄 본문 줄 수. */
 const COLLAPSED_LINES = 2;
@@ -82,12 +82,12 @@ export function AiSummaryCard() {
 
 const styles = StyleSheet.create({
   card: {
-    padding: HomeSpacing.cardPad,
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.accentSurface,
+    padding: AppSpacing.cardPad,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.accentSurface,
     borderWidth: 1,
-    borderColor: HomeColors.accentBorder,
-    marginBottom: HomeSpacing.cardGap,
+    borderColor: AppColors.accentBorder,
+    marginBottom: AppSpacing.cardGap,
   },
   header: {
     flexDirection: 'row',
@@ -97,8 +97,8 @@ const styles = StyleSheet.create({
   badge: {
     width: 32,
     height: 32,
-    borderRadius: HomeRadius.chip,
-    backgroundColor: HomeColors.accent,
+    borderRadius: AppRadius.chip,
+    backgroundColor: AppColors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -112,12 +112,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   subtitle: {
     marginTop: 2,
     fontSize: 10,
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   bodyWrap: {
     marginTop: 12,
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   body: {
     fontSize: 13,
     lineHeight: 21,
-    color: HomeColors.body,
+    color: AppColors.body,
   },
   measurer: {
     position: 'absolute',
@@ -136,13 +136,13 @@ const styles = StyleSheet.create({
   },
   emphasis: {
     fontWeight: '800',
-    color: HomeColors.accentDeep,
+    color: AppColors.accentDeep,
   },
   link: {
     marginTop: 12,
     fontSize: 12,
     fontWeight: '700',
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   pressed: {
     opacity: 0.6,

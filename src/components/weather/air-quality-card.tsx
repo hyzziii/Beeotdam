@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors, HomeRadius, HomeSpacing, pct } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing, pct } from '@/constants/app-theme';
 import { airGradeConfig, airQuality } from '@/data';
 
 export function AirQualityCard() {
@@ -38,17 +38,17 @@ export function AirQualityCard() {
 
 const styles = StyleSheet.create({
   card: {
-    padding: HomeSpacing.cardPad,
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.card,
+    padding: AppSpacing.cardPad,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.card,
     borderWidth: 1,
-    borderColor: HomeColors.cardBorder,
-    marginBottom: HomeSpacing.cardGap,
+    borderColor: AppColors.cardBorder,
+    marginBottom: AppSpacing.cardGap,
   },
   title: {
     fontSize: 15,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
     marginBottom: 4,
   },
   row: {
@@ -60,13 +60,13 @@ const styles = StyleSheet.create({
   label: {
     width: 62,
     fontSize: 11,
-    color: HomeColors.body,
+    color: AppColors.body,
   },
   track: {
     flex: 1,
     height: 6,
     borderRadius: 3,
-    backgroundColor: HomeColors.track,
+    backgroundColor: AppColors.track,
     overflow: 'hidden',
   },
   fill: {
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   reading: {
     fontSize: 11,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   badge: {
     paddingHorizontal: 5,

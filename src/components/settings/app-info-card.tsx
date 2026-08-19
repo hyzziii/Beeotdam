@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors, HomeRadius, HomeSpacing } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { appInfo } from '@/data';
 
 export function AppInfoCard() {
@@ -26,12 +26,12 @@ const styles = StyleSheet.create({
   card: {
     alignItems: 'center',
     paddingVertical: 22,
-    paddingHorizontal: HomeSpacing.cardPad,
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.accentSurface,
+    paddingHorizontal: AppSpacing.cardPad,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.accentSurface,
     borderWidth: 1,
-    borderColor: HomeColors.accentBorder,
-    marginBottom: HomeSpacing.cardGap,
+    borderColor: AppColors.accentBorder,
+    marginBottom: AppSpacing.cardGap,
   },
   icons: {
     fontSize: 26,
@@ -40,13 +40,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   tagline: {
     marginTop: 4,
     fontSize: 11,
     textAlign: 'center',
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   links: {
     flexDirection: 'row',
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
   link: {
     fontSize: 11,
-    color: HomeColors.muted,
+    color: AppColors.muted,
     textDecorationLine: 'underline',
   },
   pressed: {

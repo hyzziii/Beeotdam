@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
-import { HomeColors } from '@/constants/home-theme';
+import { AppColors } from '@/constants/app-theme';
 
 /** 저수율을 원형 게이지로 보여준다. 12시 방향에서 시계 방향으로 찬다. */
 export function ReservoirRing({
@@ -27,7 +27,7 @@ export function ReservoirRing({
           cx={center}
           cy={center}
           r={radius}
-          stroke={HomeColors.track}
+          stroke={AppColors.track}
           strokeWidth={stroke}
           fill="none"
         />

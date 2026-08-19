@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors, HomeRadius, HomeSpacing } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { weatherStats } from '@/data';
 
 /** 풍속·습도·기압·가시거리·일출·일몰을 2열 타일로 보여준다. */
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: HomeSpacing.cardGap,
+    marginBottom: AppSpacing.cardGap,
   },
   tile: {
     // 두 열로 나누되 gap 8을 빼야 3열로 넘어가지 않는다
@@ -36,10 +36,10 @@ const styles = StyleSheet.create({
     gap: 9,
     paddingVertical: 12,
     paddingHorizontal: 12,
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.card,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.card,
     borderWidth: 1,
-    borderColor: HomeColors.cardBorder,
+    borderColor: AppColors.cardBorder,
   },
   icon: {
     fontSize: 18,
@@ -50,11 +50,11 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 14,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   label: {
     marginTop: 2,
     fontSize: 9,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
 });

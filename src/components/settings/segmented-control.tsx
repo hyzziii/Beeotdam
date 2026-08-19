@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors } from '@/constants/home-theme';
+import { AppColors } from '@/constants/app-theme';
 
 /** 표시 설정에서 쓰는 작은 세그먼트 컨트롤. */
 export function SegmentedControl<T extends string>({
@@ -50,12 +50,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   segmentSelected: {
-    backgroundColor: HomeColors.accent,
+    backgroundColor: AppColors.accent,
   },
   label: {
     fontSize: 12,
     fontWeight: '700',
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   labelSelected: {
     color: '#FFFFFF',

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ReservoirRing } from './reservoir-ring';
 
-import { HomeColors, HomeRadius, HomeSpacing, pct } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing, pct } from '@/constants/app-theme';
 import { Dam, damStatusConfig } from '@/data';
 import { FLOOD_LIMIT_PERCENT, damDelta, isSafe, withThousands } from '@/lib/dam';
 
@@ -72,7 +72,7 @@ export function DamCard({ dam }: { dam: Dam }) {
 
         <View style={styles.right}>
           <ReservoirRing level={dam.level} color={status.color} />
-          <Text style={[styles.delta, { color: rising ? HomeColors.up : HomeColors.down }]}>
+          <Text style={[styles.delta, { color: rising ? AppColors.up : AppColors.down }]}>
             {rising ? '▲' : '▼'} {Math.abs(delta).toFixed(1)}%p
           </Text>
           <Text style={styles.deltaCaption}>전일 대비</Text>
@@ -131,11 +131,11 @@ function WeeklyTrend({ dam, color }: { dam: Dam; color: string }) {
 const styles = StyleSheet.create({
   card: {
     padding: 14,
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.card,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.card,
     borderWidth: 1,
-    borderColor: HomeColors.cardBorder,
-    marginBottom: HomeSpacing.cardGap,
+    borderColor: AppColors.cardBorder,
+    marginBottom: AppSpacing.cardGap,
   },
   main: {
     flexDirection: 'row',
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   badge: {
     paddingHorizontal: 7,
@@ -171,13 +171,13 @@ const styles = StyleSheet.create({
   location: {
     marginTop: 4,
     fontSize: 11,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   track: {
     height: 8,
     marginTop: 12,
     borderRadius: 4,
-    backgroundColor: HomeColors.track,
+    backgroundColor: AppColors.track,
     overflow: 'hidden',
   },
   fill: {
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   },
   scaleEdge: {
     fontSize: 9,
-    color: HomeColors.faint,
+    color: AppColors.faint,
   },
   floodLabel: {
     fontSize: 9,
@@ -215,19 +215,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   flowArrowIn: {
-    color: HomeColors.accent,
+    color: AppColors.accent,
     fontWeight: '800',
   },
   flowArrowOut: {
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
     fontWeight: '800',
   },
   flowLabel: {
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   flowValue: {
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   delta: {
     marginTop: 6,
@@ -237,18 +237,18 @@ const styles = StyleSheet.create({
   deltaCaption: {
     marginTop: 1,
     fontSize: 9,
-    color: HomeColors.faint,
+    color: AppColors.faint,
   },
   notice: {
     marginTop: 12,
     paddingVertical: 9,
     paddingHorizontal: 10,
     borderRadius: 10,
-    backgroundColor: HomeColors.accentSurface,
+    backgroundColor: AppColors.accentSurface,
   },
   noticeText: {
     fontSize: 11,
-    color: HomeColors.body,
+    color: AppColors.body,
   },
   pressed: {
     opacity: 0.6,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: HomeColors.cardBorder,
+    borderTopColor: AppColors.cardBorder,
   },
   trendLegend: {
     flexDirection: 'row',
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   trendLegendText: {
     fontSize: 9,
-    color: HomeColors.faint,
+    color: AppColors.faint,
   },
   trendRow: {
     flexDirection: 'row',
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   trendRain: {
     fontSize: 9,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   trendBarSlot: {
     height: 34,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   trendBar: {
     width: 12,
     borderRadius: 3,
-    backgroundColor: HomeColors.accent,
+    backgroundColor: AppColors.accent,
   },
   trendLevel: {
     marginTop: 5,
@@ -297,6 +297,6 @@ const styles = StyleSheet.create({
   trendDay: {
     marginTop: 2,
     fontSize: 8,
-    color: HomeColors.faint,
+    color: AppColors.faint,
   },
 });

@@ -5,7 +5,7 @@ import { AiSummaryCard } from '@/components/home/ai-summary-card';
 import { DamLevelList } from '@/components/home/dam-level-list';
 import { HourlyRainCard } from '@/components/home/hourly-rain-card';
 import { WeeklyWeatherList } from '@/components/home/weekly-weather-list';
-import { HomeColors, HomeRadius, HomeSpacing } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 
 export default function HomeScreen() {
   return (
@@ -72,11 +72,11 @@ function WeatherStat({ icon, value, label }: { icon: string; value: string; labe
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: HomeColors.screen,
+    backgroundColor: AppColors.screen,
   },
 
   container: {
-    padding: HomeSpacing.screenPad,
+    padding: AppSpacing.screenPad,
     paddingBottom: 40,
   },
 
@@ -90,13 +90,13 @@ const styles = StyleSheet.create({
   location: {
     fontSize: 16,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
 
   date: {
     marginTop: 3,
     fontSize: 11,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
 
   locationButton: {
@@ -104,21 +104,21 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: HomeColors.accentBorder,
-    backgroundColor: HomeColors.accentSurface,
+    borderColor: AppColors.accentBorder,
+    backgroundColor: AppColors.accentSurface,
   },
 
   locationButtonText: {
     fontSize: 11,
     fontWeight: '700',
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
 
   weatherCard: {
     borderRadius: 20,
     padding: 18,
-    backgroundColor: HomeColors.accentDeep,
-    marginBottom: HomeSpacing.cardGap,
+    backgroundColor: AppColors.accentDeep,
+    marginBottom: AppSpacing.cardGap,
   },
 
   weatherTop: {
@@ -183,11 +183,11 @@ const styles = StyleSheet.create({
 
   alertCard: {
     padding: 14,
-    borderRadius: HomeRadius.card,
+    borderRadius: AppRadius.card,
     backgroundColor: '#FFFDF0',
     borderWidth: 1,
     borderColor: '#F5DE85',
-    marginBottom: HomeSpacing.cardGap,
+    marginBottom: AppSpacing.cardGap,
   },
 
   alertTitle: {

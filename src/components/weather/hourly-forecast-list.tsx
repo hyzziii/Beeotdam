@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors, HomeRadius, HomeSpacing, RAIN_HIGHLIGHT, pct } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing, RAIN_HIGHLIGHT, pct } from '@/constants/app-theme';
 import { currentHour, hourlyRain } from '@/data';
 
 /** hourlyRain에는 아이콘 필드가 없어서 강수확률로 대신 고른다. */
@@ -62,12 +62,12 @@ export function HourlyForecastList() {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.card,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.card,
     borderWidth: 1,
-    borderColor: HomeColors.cardBorder,
+    borderColor: AppColors.cardBorder,
     overflow: 'hidden',
-    marginBottom: HomeSpacing.cardGap,
+    marginBottom: AppSpacing.cardGap,
   },
   row: {
     flexDirection: 'row',
@@ -81,16 +81,16 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F1F5F9',
   },
   rowCurrent: {
-    backgroundColor: HomeColors.accentSurface,
+    backgroundColor: AppColors.accentSurface,
   },
   hour: {
     width: 34,
     fontSize: 11,
-    color: HomeColors.faint,
+    color: AppColors.faint,
   },
   hourCurrent: {
     fontWeight: '800',
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   icon: {
     width: 24,
@@ -103,16 +103,16 @@ const styles = StyleSheet.create({
   prob: {
     fontSize: 12,
     fontWeight: '700',
-    color: HomeColors.body,
+    color: AppColors.body,
   },
   probCurrent: {
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   track: {
     height: 5,
     marginTop: 6,
     borderRadius: 3,
-    backgroundColor: HomeColors.track,
+    backgroundColor: AppColors.track,
     overflow: 'hidden',
   },
   fill: {
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   fillRainy: {
-    backgroundColor: HomeColors.accent,
+    backgroundColor: AppColors.accent,
   },
   fillDry: {
     backgroundColor: '#CBD5E1',
@@ -130,10 +130,10 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     fontSize: 11,
     fontWeight: '700',
-    color: HomeColors.faint,
+    color: AppColors.faint,
   },
   amountRainy: {
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
   badgeSlot: {
     width: 32,
@@ -143,11 +143,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
-    backgroundColor: HomeColors.track,
+    backgroundColor: AppColors.track,
   },
   badgeText: {
     fontSize: 9,
     fontWeight: '700',
-    color: HomeColors.body,
+    color: AppColors.body,
   },
 });

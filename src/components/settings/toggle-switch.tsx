@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
 
-import { HomeColors } from '@/constants/home-theme';
+import { AppColors } from '@/constants/app-theme';
 
 const TRACK_WIDTH = 46;
 const TRACK_HEIGHT = 26;
@@ -40,7 +40,7 @@ export function ToggleSwitch({
 
   const backgroundColor = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [HomeColors.track, color],
+    outputRange: [AppColors.track, color],
   });
 
   return (

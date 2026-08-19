@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { HomeColors, HomeRadius, HomeSpacing, RAIN_HIGHLIGHT } from '@/constants/home-theme';
+import { AppColors, AppRadius, AppSpacing, RAIN_HIGHLIGHT } from '@/constants/app-theme';
 import { weeklyWeather } from '@/data';
 
 const weekMin = Math.min(...weeklyWeather.map((day) => day.low));
@@ -40,17 +40,17 @@ export function WeeklyWeatherList() {
 
 const styles = StyleSheet.create({
   card: {
-    padding: HomeSpacing.cardPad,
-    borderRadius: HomeRadius.card,
-    backgroundColor: HomeColors.card,
+    padding: AppSpacing.cardPad,
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.card,
     borderWidth: 1,
-    borderColor: HomeColors.cardBorder,
-    marginBottom: HomeSpacing.cardGap,
+    borderColor: AppColors.cardBorder,
+    marginBottom: AppSpacing.cardGap,
   },
   title: {
     fontSize: 15,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   list: {
     marginTop: 6,
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   day: {
     width: 22,
     fontSize: 12,
-    color: HomeColors.body,
+    color: AppColors.body,
   },
   icon: {
     width: 24,
@@ -81,28 +81,28 @@ const styles = StyleSheet.create({
   fill: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: HomeColors.accent,
+    backgroundColor: AppColors.accent,
   },
   low: {
     width: 28,
     textAlign: 'right',
     fontSize: 12,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   high: {
     width: 30,
     textAlign: 'right',
     fontSize: 13,
     fontWeight: '800',
-    color: HomeColors.title,
+    color: AppColors.title,
   },
   rain: {
     width: 34,
     textAlign: 'right',
     fontSize: 11,
-    color: HomeColors.muted,
+    color: AppColors.muted,
   },
   rainActive: {
-    color: HomeColors.accentText,
+    color: AppColors.accentText,
   },
 });
