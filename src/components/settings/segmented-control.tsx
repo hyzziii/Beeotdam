@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
-import { AppColors } from '@/constants/app-theme';
 
 /** 표시 설정에서 쓰는 작은 세그먼트 컨트롤. */
 export function SegmentedControl<T extends string>({
@@ -12,6 +12,8 @@ export function SegmentedControl<T extends string>({
   value: T;
   onChange: (next: T) => void;
 }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.track}>
       {options.map((option) => {
@@ -36,12 +38,12 @@ export function SegmentedControl<T extends string>({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   track: {
     flexDirection: 'row',
     padding: 3,
     borderRadius: 10,
-    backgroundColor: '#EDF2F8',
+    backgroundColor: c.segmentTrack,
     gap: 2,
   },
   segment: {
@@ -50,12 +52,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   segmentSelected: {
-    backgroundColor: AppColors.accent,
+    backgroundColor: c.accent,
   },
   label: {
     fontSize: 12,
     fontWeight: '700',
-    color: AppColors.muted,
+    color: c.muted,
   },
   labelSelected: {
     color: '#FFFFFF',
@@ -63,4 +65,4 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.6,
   },
-});
+}));

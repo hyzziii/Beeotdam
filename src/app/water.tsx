@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DamFilterRow } from '@/components/water/dam-filter';
 import { DamCard } from '@/components/water/dam-card';
 import { WaterSummaryCard } from '@/components/water/water-summary-card';
-import { AppColors, AppSpacing } from '@/constants/app-theme';
+import { AppSpacing } from '@/constants/app-theme';
 import { dams } from '@/data';
 import { DamFilter, cautionCount, filterDams, nationalAverageLevel, safeCount } from '@/lib/dam';
 
@@ -13,6 +14,8 @@ import { DamFilter, cautionCount, filterDams, nationalAverageLevel, safeCount } 
 const LAST_UPDATED = '08.18 14:00';
 
 export default function WaterScreen() {
+  const styles = useStyles();
+
   const [filter, setFilter] = useState<DamFilter>('all');
 
   const visibleDams = useMemo(() => filterDams(dams, filter), [filter]);
@@ -46,10 +49,10 @@ export default function WaterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   safeArea: {
     flex: 1,
-    backgroundColor: AppColors.screen,
+    backgroundColor: c.screen,
   },
   container: {
     padding: AppSpacing.screenPad,
@@ -58,7 +61,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   metaRow: {
     flexDirection: 'row',
@@ -69,7 +72,7 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontSize: 11,
-    color: AppColors.muted,
+    color: c.muted,
   },
   liveDot: {
     width: 6,
@@ -81,6 +84,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
     textAlign: 'center',
     fontSize: 12,
-    color: AppColors.muted,
+    color: c.muted,
   },
-});
+}));

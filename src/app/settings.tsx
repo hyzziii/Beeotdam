@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import { createStyles, useThemeControl } from '@/theme/theme-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppInfoCard } from '@/components/settings/app-info-card';
-import { DisplayCard, TempUnit, ThemeMode } from '@/components/settings/display-card';
+import { DisplayCard, TempUnit } from '@/components/settings/display-card';
 import { NotificationCard } from '@/components/settings/notification-card';
 import { RegionCard } from '@/components/settings/region-card';
-import { AppColors, AppSpacing } from '@/constants/app-theme';
+import { AppSpacing } from '@/constants/app-theme';
 import { appInfo, notificationOptions } from '@/data';
 
 const defaultNotifications = Object.fromEntries(
@@ -14,11 +15,14 @@ const defaultNotifications = Object.fromEntries(
 );
 
 export default function SettingsScreen() {
+  const styles = useStyles();
+
   // 샘플 화면이라 상태는 메모리에만 둔다. 저장소를 붙이면 여기서 읽고 쓴다.
   const [selectedRegions, setSelectedRegions] = useState<string[]>(['gangnam']);
   const [notifications, setNotifications] = useState<Record<string, boolean>>(defaultNotifications);
   const [unit, setUnit] = useState<TempUnit>('c');
-  const [theme, setTheme] = useState<ThemeMode>('light');
+  // 테마는 화면 로컬 상태가 아니라 앱 전역 Provider가 들고 있다
+  const { preference, setPreference } = useThemeControl();
 
   const toggleRegion = (id: string) =>
     setSelectedRegions((prev) =>
@@ -42,8 +46,8 @@ export default function SettingsScreen() {
           <DisplayCard
             unit={unit}
             onUnitChange={setUnit}
-            theme={theme}
-            onThemeChange={setTheme}
+            theme={preference}
+            onThemeChange={setPreference}
           />
           <AppInfoCard />
         </View>
@@ -52,10 +56,10 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   safeArea: {
     flex: 1,
-    backgroundColor: AppColors.screen,
+    backgroundColor: c.screen,
   },
   container: {
     padding: AppSpacing.screenPad,
@@ -64,14 +68,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   meta: {
     marginTop: 4,
     fontSize: 11,
-    color: AppColors.muted,
+    color: c.muted,
   },
   body: {
     marginTop: 14,
   },
-});
+}));

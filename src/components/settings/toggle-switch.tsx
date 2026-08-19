@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet } from 'react-native';
+import { Animated, Pressable } from 'react-native';
+import { createStyles, useAppTheme } from '@/theme/theme-context';
 
-import { AppColors } from '@/constants/app-theme';
 
 const TRACK_WIDTH = 46;
 const TRACK_HEIGHT = 26;
@@ -23,6 +23,9 @@ export function ToggleSwitch({
   color: string;
   accessibilityLabel?: string;
 }) {
+  const styles = useStyles();
+  const theme = useAppTheme();
+
   const progress = useRef(new Animated.Value(value ? 1 : 0)).current;
 
   useEffect(() => {
@@ -40,7 +43,7 @@ export function ToggleSwitch({
 
   const backgroundColor = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [AppColors.track, color],
+    outputRange: [theme.track, color],
   });
 
   return (
@@ -57,7 +60,7 @@ export function ToggleSwitch({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   track: {
     width: TRACK_WIDTH,
     height: TRACK_HEIGHT,
@@ -71,4 +74,4 @@ const styles = StyleSheet.create({
     borderRadius: KNOB / 2,
     backgroundColor: '#FFFFFF',
   },
-});
+}));

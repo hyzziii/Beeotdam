@@ -1,9 +1,12 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
-import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
+import { AppRadius, AppSpacing } from '@/constants/app-theme';
 import { appInfo } from '@/data';
 
 export function AppInfoCard() {
+  const styles = useStyles();
+
   return (
     <View style={styles.card}>
       <Text style={styles.icons}>🌧️💧</Text>
@@ -22,15 +25,15 @@ export function AppInfoCard() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   card: {
     alignItems: 'center',
     paddingVertical: 22,
     paddingHorizontal: AppSpacing.cardPad,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.accentSurface,
+    backgroundColor: c.accentSurface,
     borderWidth: 1,
-    borderColor: AppColors.accentBorder,
+    borderColor: c.accentBorder,
     marginBottom: AppSpacing.cardGap,
   },
   icons: {
@@ -40,13 +43,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   tagline: {
     marginTop: 4,
     fontSize: 11,
     textAlign: 'center',
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   links: {
     flexDirection: 'row',
@@ -55,10 +58,10 @@ const styles = StyleSheet.create({
   },
   link: {
     fontSize: 11,
-    color: AppColors.muted,
+    color: c.muted,
     textDecorationLine: 'underline',
   },
   pressed: {
     opacity: 0.6,
   },
-});
+}));

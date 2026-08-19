@@ -1,9 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { TabList, TabListProps, TabSlot, TabTrigger, TabTriggerSlotProps, Tabs } from 'expo-router/ui';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { createStyles, useAppTheme } from '@/theme/theme-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppColors } from '@/constants/app-theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -36,6 +36,8 @@ export default function AppTabs() {
 }
 
 function TabBar(props: TabListProps) {
+  const styles = useStyles();
+
   const insets = useSafeAreaInsets();
 
   return (
@@ -52,7 +54,10 @@ function TabButton({
   isFocused,
   ...props
 }: TabTriggerSlotProps & { icon: IconName; activeIcon: IconName; label: string }) {
-  const color = isFocused ? AppColors.accentText : AppColors.muted;
+  const styles = useStyles();
+  const theme = useAppTheme();
+
+  const color = isFocused ? theme.accentText : theme.muted;
 
   return (
     <Pressable
@@ -66,13 +71,13 @@ function TabButton({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   bar: {
     flexDirection: 'row',
     paddingTop: 8,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderTopWidth: 1,
-    borderTopColor: AppColors.cardBorder,
+    borderTopColor: c.cardBorder,
   },
   tab: {
     flex: 1,
@@ -88,4 +93,4 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.6,
   },
-});
+}));

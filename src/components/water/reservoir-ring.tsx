@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { createStyles, useAppTheme } from '@/theme/theme-context';
 import Svg, { Circle } from 'react-native-svg';
 
-import { AppColors } from '@/constants/app-theme';
 
 /** 저수율을 원형 게이지로 보여준다. 12시 방향에서 시계 방향으로 찬다. */
 export function ReservoirRing({
@@ -15,6 +15,9 @@ export function ReservoirRing({
   size?: number;
   stroke?: number;
 }) {
+  const styles = useStyles();
+  const theme = useAppTheme();
+
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.min(Math.max(level, 0), 100);
@@ -27,7 +30,7 @@ export function ReservoirRing({
           cx={center}
           cy={center}
           r={radius}
-          stroke={AppColors.track}
+          stroke={theme.track}
           strokeWidth={stroke}
           fill="none"
         />
@@ -50,7 +53,7 @@ export function ReservoirRing({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   wrap: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -59,4 +62,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
   },
-});
+}));

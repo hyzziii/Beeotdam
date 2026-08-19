@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
-import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
+import { AppRadius, AppSpacing } from '@/constants/app-theme';
 import { MAX_REGIONS, regions } from '@/data';
 
 export function RegionCard({
@@ -10,6 +11,8 @@ export function RegionCard({
   selected: string[];
   onToggle: (id: string) => void;
 }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>관심 지역</Text>
@@ -49,24 +52,24 @@ export function RegionCard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   card: {
     padding: AppSpacing.cardPad,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
+    borderColor: c.cardBorder,
     marginBottom: AppSpacing.cardGap,
   },
   title: {
     fontSize: 14,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   subtitle: {
     marginTop: 3,
     fontSize: 11,
-    color: AppColors.muted,
+    color: c.muted,
   },
   list: {
     marginTop: 10,
@@ -81,7 +84,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   rowChecked: {
-    backgroundColor: AppColors.accentSurface,
+    backgroundColor: c.accentSurface,
   },
   rowBlocked: {
     opacity: 0.45,
@@ -93,24 +96,24 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontWeight: '600',
-    color: AppColors.body,
+    color: c.body,
   },
   nameChecked: {
     fontWeight: '800',
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   circle: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 1.5,
-    borderColor: AppColors.track,
+    borderColor: c.track,
     alignItems: 'center',
     justifyContent: 'center',
   },
   circleChecked: {
-    borderColor: AppColors.accent,
-    backgroundColor: AppColors.accent,
+    borderColor: c.accent,
+    backgroundColor: c.accent,
   },
   check: {
     fontSize: 12,
@@ -120,4 +123,4 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
-});
+}));

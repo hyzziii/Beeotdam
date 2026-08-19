@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
 import { ToggleSwitch } from './toggle-switch';
 
-import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
+import { AppRadius, AppSpacing } from '@/constants/app-theme';
 import { notificationOptions } from '@/data';
 
 export function NotificationCard({
@@ -12,6 +13,8 @@ export function NotificationCard({
   enabled: Record<string, boolean>;
   onToggle: (id: string, next: boolean) => void;
 }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>알림 설정</Text>
@@ -41,19 +44,19 @@ export function NotificationCard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   card: {
     padding: AppSpacing.cardPad,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
+    borderColor: c.cardBorder,
     marginBottom: AppSpacing.cardGap,
   },
   title: {
     fontSize: 14,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   list: {
     marginTop: 6,
@@ -80,11 +83,11 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: AppColors.title,
+    color: c.title,
   },
   rowDescription: {
     marginTop: 2,
     fontSize: 10,
-    color: AppColors.muted,
+    color: c.muted,
   },
-});
+}));

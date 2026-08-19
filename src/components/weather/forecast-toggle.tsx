@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
-import { AppColors, AppSpacing } from '@/constants/app-theme';
+import { AppSpacing } from '@/constants/app-theme';
 
 export type ForecastMode = 'hourly' | 'weekly';
 
@@ -17,6 +18,8 @@ export function ForecastToggle({
   value: ForecastMode;
   onChange: (next: ForecastMode) => void;
 }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.track}>
       {OPTIONS.map((option) => {
@@ -41,12 +44,12 @@ export function ForecastToggle({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   track: {
     flexDirection: 'row',
     padding: 4,
     borderRadius: 14,
-    backgroundColor: '#EDF2F8',
+    backgroundColor: c.segmentTrack,
     marginBottom: AppSpacing.cardGap,
   },
   segment: {
@@ -56,18 +59,18 @@ const styles = StyleSheet.create({
     borderRadius: 11,
   },
   segmentSelected: {
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
   },
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: AppColors.muted,
+    color: c.muted,
   },
   labelSelected: {
     fontWeight: '800',
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   pressed: {
     opacity: 0.6,
   },
-});
+}));

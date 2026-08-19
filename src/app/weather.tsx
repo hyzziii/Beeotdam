@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { WeeklyWeatherList } from '@/components/home/weekly-weather-list';
@@ -7,9 +8,11 @@ import { AirQualityCard } from '@/components/weather/air-quality-card';
 import { ForecastMode, ForecastToggle } from '@/components/weather/forecast-toggle';
 import { HourlyForecastList } from '@/components/weather/hourly-forecast-list';
 import { WeatherStatGrid } from '@/components/weather/weather-stat-grid';
-import { AppColors, AppSpacing } from '@/constants/app-theme';
+import { AppSpacing } from '@/constants/app-theme';
 
 export default function WeatherScreen() {
+  const styles = useStyles();
+
   const [mode, setMode] = useState<ForecastMode>('hourly');
 
   return (
@@ -32,10 +35,10 @@ export default function WeatherScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   safeArea: {
     flex: 1,
-    backgroundColor: AppColors.screen,
+    backgroundColor: c.screen,
   },
   container: {
     padding: AppSpacing.screenPad,
@@ -44,14 +47,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   meta: {
     marginTop: 4,
     fontSize: 11,
-    color: AppColors.muted,
+    color: c.muted,
   },
   toggleWrap: {
     marginTop: 14,
   },
-});
+}));
