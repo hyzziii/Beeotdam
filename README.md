@@ -1,56 +1,141 @@
-# Welcome to your Expo app 👋
+# 비왔댐 (Beeotdam)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+내 지역의 **비와 물 상황을 한눈에** 보는 모바일 앱입니다.
+날씨 예보와 댐 저수율을 따로 찾아볼 필요 없이 한 앱에서 확인합니다.
 
-## Get started
+> **개발 단계 안내**
+> 현재는 UI 구현 단계로, 모든 수치가 `src/data/`의 샘플 데이터로 동작합니다.
+> 기상청·K-water 실제 API는 아직 연결되지 않았습니다.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 화면
 
-2. Start the app
+### 🏠 홈
 
-   ```bash
-   npx expo start
-   ```
+하루를 시작할 때 필요한 정보를 위에서부터 순서대로 보여줍니다.
 
-In the output, you'll find options to open the app in a
+- 현재 기온·체감·강수확률·습도
+- 우산 알림 — 비 오는 시간대와 최고 강수확률
+- **시간대별 강수 차트** — 강수확률 60% 이상 구간을 파란색으로 강조
+- **AI 날씨 요약** — 본문 2줄로 접히고, 내용이 넘칠 때만 펼치기 버튼이 나타남
+- **한강 수계 저수율** — 소양강댐·충주댐의 저수율과 전일 대비 증감
+- 주간 날씨 7일치
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 💧 수자원
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+전국 댐의 저수 상황을 모아서 봅니다.
 
-## Get a fresh project
+- 전국 평균 저수율, 양호 댐 / 주의 이상 댐 개수 (모두 댐 데이터에서 계산)
+- **전체 / 양호 / 주의 필터**
+- 댐별 카드
+  - 상태 배지 (양호 · 보통 · 관심 · 홍수 주의)
+  - 원형 저수율 게이지
+  - **홍수 제한 수위(80%) 눈금이 표시된 진행바**
+  - 전일 대비 증감(%p), 유입량 / 방류량
+  - 탭하면 최근 7일 강수량·저수율 그래프가 펼쳐짐
 
-When you're ready, run:
+### 🌦️ 날씨
+
+- **시간별 / 주간 예보** 전환
+- 시간별 — 06시~20시 강수확률과 강수량, 현재 시각 강조
+- 주간 — 홈의 주간 날씨 목록을 그대로 사용
+- 대기 환경 — 미세먼지 · 초미세먼지 · 오존 · UV 지수와 등급
+- 풍속 · 습도 · 기압 · 가시거리 · 일출 · 일몰
+
+### ⚙️ 설정
+
+- 관심 지역 선택 (최대 5개)
+- 알림 6종 개별 토글 — 날씨 요약, 강수 예보, 집중호우, 댐 저수율, 홍수·방류, 가뭄
+- 온도 단위(°C / °F), 테마(라이트 / 다크 / 자동)
+
+---
+
+## 시작하기
+
+### 요구 사항
+
+- Node.js
+- Android 에뮬레이터 또는 [Expo Go](https://expo.dev/go)가 설치된 실기기
+
+### 설치
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 실행
 
-### Other setup steps
+```bash
+npm run android   # Android
+npm run ios       # iOS
+npm run web       # 웹
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Expo Go에 포함된 패키지만 사용하므로 **별도의 네이티브 빌드 없이 바로 실행**됩니다.
 
-## Learn more
+> 개발은 Android 에뮬레이터에서 진행했습니다. iOS와 웹은 코드상 지원되지만 실기기 확인은 하지 않았습니다.
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 기술 스택
 
-## Join the community
+| 항목 | 버전 |
+|---|---|
+| Expo SDK | 57 |
+| React Native | 0.86 |
+| expo-router | 57 (파일 기반 라우팅) |
+| TypeScript | strict |
+| react-native-svg | 원형 게이지, 그라디언트 |
+| @expo/vector-icons | 탭 바 아이콘 |
 
-Join our community of developers creating universal apps.
+---
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 프로젝트 구조
+
+```
+src/
+├─ app/                    화면 (expo-router 파일 기반 라우팅)
+│  ├─ _layout.tsx
+│  ├─ index.tsx            홈
+│  ├─ water.tsx            수자원
+│  ├─ weather.tsx          날씨
+│  └─ settings.tsx         설정
+│
+├─ components/
+│  ├─ app-tabs.tsx         하단 탭 바 (웹은 app-tabs.web.tsx)
+│  ├─ home/                홈 전용 컴포넌트
+│  ├─ water/               수자원 전용 컴포넌트
+│  ├─ weather/             날씨 전용 컴포넌트
+│  └─ settings/            설정 전용 컴포넌트
+│
+├─ constants/
+│  └─ app-theme.ts         색상·여백·모서리 토큰 (네 화면 공용)
+│
+├─ lib/
+│  └─ dam.ts               저수율 집계·필터 로직
+│
+└─ data/                   샘플 데이터
+   ├─ index.ts             재수출 — 사용하는 쪽은 '@/data'만 참조
+   ├─ dams.ts              댐 5곳
+   ├─ weather.ts           시간별·주간 예보, 대기 환경
+   └─ settings.ts          지역, 알림 항목, 앱 정보
+```
+
+### 데이터
+
+모든 샘플 데이터는 `src/data/`에 도메인별로 나뉘어 있고, `index.ts`가 다시 내보냅니다.
+사용하는 쪽은 항상 `@/data`만 바라보므로, **실제 API를 붙일 때 모듈 하나씩 교체해도 import는 바뀌지 않습니다.**
+
+화면에 보이는 수치는 대부분 하드코딩이 아니라 데이터에서 계산됩니다.
+예를 들어 수자원 탭의 `전국 평균 64.1%`, `양호 3개`, `주의 이상 2개`는 모두 `dams` 배열에서 나옵니다.
+
+---
+
+## 남은 작업
+
+- [ ] 기상청 · K-water 실제 API 연동
+- [ ] 설정값 영구 저장 (현재는 앱을 끄면 초기화)
+- [ ] 다크 모드 실제 적용 (설정 UI는 있으나 화면에 반영되지 않음)
+- [ ] 지도 탭
+- [ ] iOS · 웹 실기기 확인
