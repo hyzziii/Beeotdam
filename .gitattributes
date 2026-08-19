@@ -1,0 +1,4 @@
+# Normalize line endings to LF in the repository and in every working tree,
+# so Windows checkouts don't rewrite files to CRLF and produce whole-file diffs.
+# Binary files are detected automatically by `text=auto` and left untouched.
+* text=auto eol=lf
