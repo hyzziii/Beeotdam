@@ -1,32 +1,91 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { useColorScheme } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { TabList, TabListProps, TabSlot, TabTrigger, TabTriggerSlotProps, Tabs } from 'expo-router/ui';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Colors } from '@/constants/theme';
+import { HomeColors } from '@/constants/home-theme';
 
+type IconName = React.ComponentProps<typeof Ionicons>['name'];
+
+/**
+ * Figma의 탭바는 선택 항목이 파란 아이콘 + 파란 라벨인 커스텀 스타일이다.
+ * NativeTabs는 안드로이드 네이티브 바라 이 스타일을 낼 수 없어 expo-router/ui로 직접 그린다.
+ */
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
   return (
-    <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <Tabs>
+      <TabSlot />
+      <TabList asChild>
+        <TabBar>
+          <TabTrigger name="index" href="/" asChild>
+            <TabButton icon="home-outline" activeIcon="home" label="홈" />
+          </TabTrigger>
+          <TabTrigger name="water" href="/water" asChild>
+            <TabButton icon="water-outline" activeIcon="water" label="수자원" />
+          </TabTrigger>
+          <TabTrigger name="weather" href="/weather" asChild>
+            <TabButton icon="cloud-outline" activeIcon="cloud" label="날씨" />
+          </TabTrigger>
+          <TabTrigger name="settings" href="/settings" asChild>
+            <TabButton icon="settings-outline" activeIcon="settings" label="설정" />
+          </TabTrigger>
+        </TabBar>
+      </TabList>
+    </Tabs>
   );
 }
+
+function TabBar(props: TabListProps) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View {...props} style={[styles.bar, { paddingBottom: insets.bottom + 6 }]}>
+      {props.children}
+    </View>
+  );
+}
+
+function TabButton({
+  icon,
+  activeIcon,
+  label,
+  isFocused,
+  ...props
+}: TabTriggerSlotProps & { icon: IconName; activeIcon: IconName; label: string }) {
+  const color = isFocused ? HomeColors.accentText : HomeColors.muted;
+
+  return (
+    <Pressable
+      {...props}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: !!isFocused }}
+      style={({ pressed }) => [styles.tab, pressed && styles.pressed]}>
+      <Ionicons name={isFocused ? activeIcon : icon} size={22} color={color} />
+      <Text style={[styles.label, { color }, isFocused && styles.labelSelected]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  bar: {
+    flexDirection: 'row',
+    paddingTop: 8,
+    backgroundColor: HomeColors.card,
+    borderTopWidth: 1,
+    borderTopColor: HomeColors.cardBorder,
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 3,
+  },
+  label: {
+    fontSize: 10,
+  },
+  labelSelected: {
+    fontWeight: '800',
+  },
+  pressed: {
+    opacity: 0.6,
+  },
+});

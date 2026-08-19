@@ -22,10 +22,16 @@ export default function AppTabs() {
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="home" href="/" asChild>
-            <TabButton>Home</TabButton>
+            <TabButton>홈</TabButton>
           </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton>Explore</TabButton>
+          <TabTrigger name="water" href="/water" asChild>
+            <TabButton>수자원</TabButton>
+          </TabTrigger>
+          <TabTrigger name="weather" href="/weather" asChild>
+            <TabButton>날씨</TabButton>
+          </TabTrigger>
+          <TabTrigger name="settings" href="/settings" asChild>
+            <TabButton>설정</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
