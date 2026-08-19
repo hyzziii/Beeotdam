@@ -7,13 +7,16 @@ import {
   TextLayoutEventData,
   View,
 } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
-import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
+import { AppRadius, AppSpacing } from '@/constants/app-theme';
 
 /** 접힌 상태에서 보여줄 본문 줄 수. */
 const COLLAPSED_LINES = 2;
 
 export function AiSummaryCard() {
+  const styles = useStyles();
+
   const [expanded, setExpanded] = useState(false);
   const [fullLines, setFullLines] = useState<number | null>(null);
 
@@ -80,13 +83,13 @@ export function AiSummaryCard() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   card: {
     padding: AppSpacing.cardPad,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.accentSurface,
+    backgroundColor: c.accentSurface,
     borderWidth: 1,
-    borderColor: AppColors.accentBorder,
+    borderColor: c.accentBorder,
     marginBottom: AppSpacing.cardGap,
   },
   header: {
@@ -98,7 +101,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: AppRadius.chip,
-    backgroundColor: AppColors.accent,
+    backgroundColor: c.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -112,12 +115,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   subtitle: {
     marginTop: 2,
     fontSize: 10,
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   bodyWrap: {
     marginTop: 12,
@@ -125,7 +128,7 @@ const styles = StyleSheet.create({
   body: {
     fontSize: 13,
     lineHeight: 21,
-    color: AppColors.body,
+    color: c.body,
   },
   measurer: {
     position: 'absolute',
@@ -136,15 +139,15 @@ const styles = StyleSheet.create({
   },
   emphasis: {
     fontWeight: '800',
-    color: AppColors.accentDeep,
+    color: c.accentDeep,
   },
   link: {
     marginTop: 12,
     fontSize: 12,
     fontWeight: '700',
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   pressed: {
     opacity: 0.6,
   },
-});
+}));

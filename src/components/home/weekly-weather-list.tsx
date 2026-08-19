@@ -1,12 +1,15 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
-import { AppColors, AppRadius, AppSpacing, RAIN_HIGHLIGHT } from '@/constants/app-theme';
+import { AppRadius, AppSpacing, RAIN_HIGHLIGHT } from '@/constants/app-theme';
 import { weeklyWeather } from '@/data';
 
 const weekMin = Math.min(...weeklyWeather.map((day) => day.low));
 const weekMax = Math.max(...weeklyWeather.map((day) => day.high));
 
 export function WeeklyWeatherList() {
+  const styles = useStyles();
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>주간 날씨</Text>
@@ -38,19 +41,19 @@ export function WeeklyWeatherList() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   card: {
     padding: AppSpacing.cardPad,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
+    borderColor: c.cardBorder,
     marginBottom: AppSpacing.cardGap,
   },
   title: {
     fontSize: 15,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   list: {
     marginTop: 6,
@@ -64,7 +67,7 @@ const styles = StyleSheet.create({
   day: {
     width: 22,
     fontSize: 12,
-    color: AppColors.body,
+    color: c.body,
   },
   icon: {
     width: 24,
@@ -81,28 +84,28 @@ const styles = StyleSheet.create({
   fill: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: AppColors.accent,
+    backgroundColor: c.accent,
   },
   low: {
     width: 28,
     textAlign: 'right',
     fontSize: 12,
-    color: AppColors.muted,
+    color: c.muted,
   },
   high: {
     width: 30,
     textAlign: 'right',
     fontSize: 13,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   rain: {
     width: 34,
     textAlign: 'right',
     fontSize: 11,
-    color: AppColors.muted,
+    color: c.muted,
   },
   rainActive: {
-    color: AppColors.accentText,
+    color: c.accentText,
   },
-});
+}));

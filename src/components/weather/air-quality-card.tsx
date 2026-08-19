@@ -1,9 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
-import { AppColors, AppRadius, AppSpacing, pct } from '@/constants/app-theme';
+import { AppRadius, AppSpacing, pct } from '@/constants/app-theme';
 import { airGradeConfig, airQuality } from '@/data';
 
 export function AirQualityCard() {
+  const styles = useStyles();
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>대기 환경</Text>
@@ -36,19 +39,19 @@ export function AirQualityCard() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   card: {
     padding: AppSpacing.cardPad,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
+    borderColor: c.cardBorder,
     marginBottom: AppSpacing.cardGap,
   },
   title: {
     fontSize: 15,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
     marginBottom: 4,
   },
   row: {
@@ -60,13 +63,13 @@ const styles = StyleSheet.create({
   label: {
     width: 62,
     fontSize: 11,
-    color: AppColors.body,
+    color: c.body,
   },
   track: {
     flex: 1,
     height: 6,
     borderRadius: 3,
-    backgroundColor: AppColors.track,
+    backgroundColor: c.track,
     overflow: 'hidden',
   },
   fill: {
@@ -76,7 +79,7 @@ const styles = StyleSheet.create({
   reading: {
     fontSize: 11,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   badge: {
     paddingHorizontal: 5,
@@ -87,4 +90,4 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
   },
-});
+}));

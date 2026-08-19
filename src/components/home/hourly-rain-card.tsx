@@ -1,6 +1,7 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import { createStyles, useAppTheme } from '@/theme/theme-context';
 
-import { AppColors, AppRadius, AppSpacing, RAIN_HIGHLIGHT } from '@/constants/app-theme';
+import { AppRadius, AppSpacing, RAIN_HIGHLIGHT } from '@/constants/app-theme';
 import { hourlyRain } from '@/data';
 
 const BAR_MAX_HEIGHT = 64;
@@ -9,6 +10,9 @@ const BAR_MIN_HEIGHT = 6;
 const maxAmount = Math.max(...hourlyRain.map((item) => item.amount));
 
 export function HourlyRainCard() {
+  const styles = useStyles();
+  const theme = useAppTheme();
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -18,8 +22,8 @@ export function HourlyRainCard() {
         </View>
 
         <View style={styles.legend}>
-          <LegendItem color={AppColors.accent} label="강수확률" />
-          <LegendItem color={AppColors.accentLegend} label="강수량" />
+          <LegendItem color={theme.accent} label="강수확률" />
+          <LegendItem color={theme.accentLegend} label="강수량" />
         </View>
       </View>
 
@@ -61,6 +65,8 @@ export function HourlyRainCard() {
 }
 
 function LegendItem({ color, label }: { color: string; label: string }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.legendItem}>
       <View style={[styles.legendSwatch, { backgroundColor: color }]} />
@@ -69,13 +75,13 @@ function LegendItem({ color, label }: { color: string; label: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   card: {
     padding: AppSpacing.cardPad,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
+    borderColor: c.cardBorder,
     marginBottom: AppSpacing.cardGap,
   },
   header: {
@@ -86,12 +92,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   subtitle: {
     marginTop: 3,
     fontSize: 11,
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   legend: {
     flexDirection: 'row',
@@ -110,7 +116,7 @@ const styles = StyleSheet.create({
   },
   legendLabel: {
     fontSize: 9,
-    color: AppColors.muted,
+    color: c.muted,
   },
   chart: {
     // 위 기준 정렬이라 강수확률 줄이 가지런히 맞고, mm 라벨이 없는 컬럼(강수량 0)은
@@ -126,11 +132,11 @@ const styles = StyleSheet.create({
   prob: {
     fontSize: 10,
     fontWeight: '600',
-    color: AppColors.faint,
+    color: c.faint,
   },
   probActive: {
     fontWeight: '800',
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   barSlot: {
     height: BAR_MAX_HEIGHT,
@@ -142,26 +148,26 @@ const styles = StyleSheet.create({
     borderRadius: AppRadius.bar,
   },
   barActive: {
-    backgroundColor: AppColors.accent,
+    backgroundColor: c.accent,
   },
   barInactive: {
-    backgroundColor: AppColors.track,
+    backgroundColor: c.track,
   },
   amount: {
     marginTop: 7,
     fontSize: 9,
-    color: AppColors.faint,
+    color: c.faint,
   },
   amountActive: {
     fontWeight: '700',
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   hour: {
     marginTop: 4,
     fontSize: 10,
-    color: AppColors.faint,
+    color: c.faint,
   },
   hourActive: {
-    color: AppColors.accentText,
+    color: c.accentText,
   },
-});
+}));

@@ -1,13 +1,17 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { createStyles, useAppTheme } from '@/theme/theme-context';
 
 import { ReservoirRing } from './reservoir-ring';
 
-import { AppColors, AppRadius, AppSpacing, pct } from '@/constants/app-theme';
+import { AppRadius, AppSpacing, pct } from '@/constants/app-theme';
 import { Dam, damStatusConfig } from '@/data';
 import { FLOOD_LIMIT_PERCENT, damDelta, isSafe, withThousands } from '@/lib/dam';
 
 export function DamCard({ dam }: { dam: Dam }) {
+  const styles = useStyles();
+  const theme = useAppTheme();
+
   const [showTrend, setShowTrend] = useState(false);
 
   const status = damStatusConfig[dam.status];
@@ -72,7 +76,7 @@ export function DamCard({ dam }: { dam: Dam }) {
 
         <View style={styles.right}>
           <ReservoirRing level={dam.level} color={status.color} />
-          <Text style={[styles.delta, { color: rising ? AppColors.up : AppColors.down }]}>
+          <Text style={[styles.delta, { color: rising ? theme.up : theme.down }]}>
             {rising ? '▲' : '▼'} {Math.abs(delta).toFixed(1)}%p
           </Text>
           <Text style={styles.deltaCaption}>전일 대비</Text>
@@ -96,6 +100,8 @@ export function DamCard({ dam }: { dam: Dam }) {
 
 /** 최근 7일 강수량(막대)과 저수율(수치)을 한눈에 보여준다. */
 function WeeklyTrend({ dam, color }: { dam: Dam; color: string }) {
+  const styles = useStyles();
+
   const maxRain = Math.max(...dam.weeklyData.map((entry) => entry.rain), 1);
 
   return (
@@ -128,13 +134,13 @@ function WeeklyTrend({ dam, color }: { dam: Dam; color: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   card: {
     padding: 14,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
+    borderColor: c.cardBorder,
     marginBottom: AppSpacing.cardGap,
   },
   main: {
@@ -156,7 +162,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   badge: {
     paddingHorizontal: 7,
@@ -171,13 +177,13 @@ const styles = StyleSheet.create({
   location: {
     marginTop: 4,
     fontSize: 11,
-    color: AppColors.muted,
+    color: c.muted,
   },
   track: {
     height: 8,
     marginTop: 12,
     borderRadius: 4,
-    backgroundColor: AppColors.track,
+    backgroundColor: c.track,
     overflow: 'hidden',
   },
   fill: {
@@ -199,7 +205,7 @@ const styles = StyleSheet.create({
   },
   scaleEdge: {
     fontSize: 9,
-    color: AppColors.faint,
+    color: c.faint,
   },
   floodLabel: {
     fontSize: 9,
@@ -215,19 +221,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   flowArrowIn: {
-    color: AppColors.accent,
+    color: c.accent,
     fontWeight: '800',
   },
   flowArrowOut: {
-    color: AppColors.accentText,
+    color: c.accentText,
     fontWeight: '800',
   },
   flowLabel: {
-    color: AppColors.muted,
+    color: c.muted,
   },
   flowValue: {
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   delta: {
     marginTop: 6,
@@ -237,18 +243,18 @@ const styles = StyleSheet.create({
   deltaCaption: {
     marginTop: 1,
     fontSize: 9,
-    color: AppColors.faint,
+    color: c.faint,
   },
   notice: {
     marginTop: 12,
     paddingVertical: 9,
     paddingHorizontal: 10,
     borderRadius: 10,
-    backgroundColor: AppColors.accentSurface,
+    backgroundColor: c.accentSurface,
   },
   noticeText: {
     fontSize: 11,
-    color: AppColors.body,
+    color: c.body,
   },
   pressed: {
     opacity: 0.6,
@@ -257,7 +263,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: AppColors.cardBorder,
+    borderTopColor: c.cardBorder,
   },
   trendLegend: {
     flexDirection: 'row',
@@ -265,7 +271,7 @@ const styles = StyleSheet.create({
   },
   trendLegendText: {
     fontSize: 9,
-    color: AppColors.faint,
+    color: c.faint,
   },
   trendRow: {
     flexDirection: 'row',
@@ -277,7 +283,7 @@ const styles = StyleSheet.create({
   },
   trendRain: {
     fontSize: 9,
-    color: AppColors.muted,
+    color: c.muted,
   },
   trendBarSlot: {
     height: 34,
@@ -287,7 +293,7 @@ const styles = StyleSheet.create({
   trendBar: {
     width: 12,
     borderRadius: 3,
-    backgroundColor: AppColors.accent,
+    backgroundColor: c.accent,
   },
   trendLevel: {
     marginTop: 5,
@@ -297,6 +303,6 @@ const styles = StyleSheet.create({
   trendDay: {
     marginTop: 2,
     fontSize: 8,
-    color: AppColors.faint,
+    color: c.faint,
   },
-});
+}));

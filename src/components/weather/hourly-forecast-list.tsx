@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
-import { AppColors, AppRadius, AppSpacing, RAIN_HIGHLIGHT, pct } from '@/constants/app-theme';
+import { AppRadius, AppSpacing, RAIN_HIGHLIGHT, pct } from '@/constants/app-theme';
 import { currentHour, hourlyRain } from '@/data';
 
 /** hourlyRain에는 아이콘 필드가 없어서 강수확률로 대신 고른다. */
@@ -11,6 +12,8 @@ function hourIcon(prob: number) {
 }
 
 export function HourlyForecastList() {
+  const styles = useStyles();
+
   return (
     <View style={styles.card}>
       {hourlyRain.map((item, index) => {
@@ -60,12 +63,12 @@ export function HourlyForecastList() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   card: {
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
+    borderColor: c.cardBorder,
     overflow: 'hidden',
     marginBottom: AppSpacing.cardGap,
   },
@@ -78,19 +81,19 @@ const styles = StyleSheet.create({
   },
   rowDivider: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: c.divider,
   },
   rowCurrent: {
-    backgroundColor: AppColors.accentSurface,
+    backgroundColor: c.accentSurface,
   },
   hour: {
     width: 34,
     fontSize: 11,
-    color: AppColors.faint,
+    color: c.faint,
   },
   hourCurrent: {
     fontWeight: '800',
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   icon: {
     width: 24,
@@ -103,16 +106,16 @@ const styles = StyleSheet.create({
   prob: {
     fontSize: 12,
     fontWeight: '700',
-    color: AppColors.body,
+    color: c.body,
   },
   probCurrent: {
-    color: AppColors.title,
+    color: c.title,
   },
   track: {
     height: 5,
     marginTop: 6,
     borderRadius: 3,
-    backgroundColor: AppColors.track,
+    backgroundColor: c.track,
     overflow: 'hidden',
   },
   fill: {
@@ -120,20 +123,20 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   fillRainy: {
-    backgroundColor: AppColors.accent,
+    backgroundColor: c.accent,
   },
   fillDry: {
-    backgroundColor: '#CBD5E1',
+    backgroundColor: c.trackFilled,
   },
   amount: {
     width: 46,
     textAlign: 'right',
     fontSize: 11,
     fontWeight: '700',
-    color: AppColors.faint,
+    color: c.faint,
   },
   amountRainy: {
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   badgeSlot: {
     width: 32,
@@ -143,11 +146,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
-    backgroundColor: AppColors.track,
+    backgroundColor: c.track,
   },
   badgeText: {
     fontSize: 9,
     fontWeight: '700',
-    color: AppColors.body,
+    color: c.body,
   },
-});
+}));

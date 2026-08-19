@@ -1,10 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
-import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
+import { AppRadius, AppSpacing } from '@/constants/app-theme';
 import { weatherStats } from '@/data';
 
 /** 풍속·습도·기압·가시거리·일출·일몰을 2열 타일로 보여준다. */
 export function WeatherStatGrid() {
+  const styles = useStyles();
+
   return (
     <View style={styles.grid}>
       {weatherStats.map((stat) => (
@@ -20,7 +23,7 @@ export function WeatherStatGrid() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -37,9 +40,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
+    borderColor: c.cardBorder,
   },
   icon: {
     fontSize: 18,
@@ -50,11 +53,11 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 14,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   label: {
     marginTop: 2,
     fontSize: 9,
-    color: AppColors.muted,
+    color: c.muted,
   },
-});
+}));

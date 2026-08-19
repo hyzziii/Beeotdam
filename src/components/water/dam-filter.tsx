@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 
-import { AppColors, AppSpacing } from '@/constants/app-theme';
+import { AppSpacing } from '@/constants/app-theme';
 import { DamFilter } from '@/lib/dam';
 
 const OPTIONS: { key: DamFilter; label: string }[] = [
@@ -16,6 +17,8 @@ export function DamFilterRow({
   value: DamFilter;
   onChange: (next: DamFilter) => void;
 }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.row}>
       {OPTIONS.map((option) => {
@@ -41,7 +44,7 @@ export function DamFilterRow({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   row: {
     flexDirection: 'row',
     gap: 8,
@@ -52,22 +55,22 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
-    backgroundColor: AppColors.card,
+    borderColor: c.cardBorder,
+    backgroundColor: c.card,
   },
   chipSelected: {
-    borderColor: AppColors.accent,
+    borderColor: c.accent,
   },
   label: {
     fontSize: 12,
     fontWeight: '600',
-    color: AppColors.muted,
+    color: c.muted,
   },
   labelSelected: {
     fontWeight: '800',
-    color: AppColors.accentText,
+    color: c.accentText,
   },
   pressed: {
     opacity: 0.6,
   },
-});
+}));

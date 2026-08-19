@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { createStyles, useAppTheme } from '@/theme/theme-context';
 
-import { AppColors, AppRadius, AppSpacing, pct } from '@/constants/app-theme';
+import { AppRadius, AppSpacing, pct } from '@/constants/app-theme';
 import { Dam, damStatusConfig, dams } from '@/data';
 
 /** Figma의 "한강 수계" 라벨에 맞춰 해당 수계의 댐만 노출한다. */
@@ -9,6 +10,8 @@ const HAN_RIVER_SYSTEM = ['소양강', '남한강'];
 const localDams = dams.filter((dam) => HAN_RIVER_SYSTEM.includes(dam.river));
 
 export function DamLevelList() {
+  const styles = useStyles();
+
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
@@ -24,6 +27,9 @@ export function DamLevelList() {
 }
 
 function DamRow({ dam }: { dam: Dam }) {
+  const styles = useStyles();
+  const theme = useAppTheme();
+
   const statusColor = damStatusConfig[dam.status].color;
   const delta = dam.level - dam.prevLevel;
   const rising = delta >= 0;
@@ -48,7 +54,7 @@ function DamRow({ dam }: { dam: Dam }) {
           </View>
 
           <Text
-            style={[styles.delta, { color: rising ? AppColors.up : AppColors.down }]}>
+            style={[styles.delta, { color: rising ? theme.up : theme.down }]}>
             {rising ? '▲' : '▼'} {Math.abs(delta).toFixed(1)}%
           </Text>
         </View>
@@ -57,7 +63,7 @@ function DamRow({ dam }: { dam: Dam }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   section: {
     marginBottom: AppSpacing.cardGap,
   },
@@ -71,11 +77,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   sectionMeta: {
     fontSize: 11,
-    color: AppColors.muted,
+    color: c.muted,
   },
   card: {
     flexDirection: 'row',
@@ -83,16 +89,16 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 14,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
+    borderColor: c.cardBorder,
     marginBottom: 8,
   },
   badge: {
     width: 44,
     height: 44,
     borderRadius: AppRadius.badge,
-    backgroundColor: AppColors.accentSoft,
+    backgroundColor: c.accentSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -110,7 +116,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   level: {
     fontSize: 17,
@@ -126,7 +132,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 6,
     borderRadius: 3,
-    backgroundColor: AppColors.track,
+    backgroundColor: c.track,
     overflow: 'hidden',
   },
   fill: {
@@ -139,4 +145,4 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
-});
+}));

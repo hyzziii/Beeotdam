@@ -1,18 +1,18 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { ThemePreference, createStyles } from '@/theme/theme-context';
 
 import { SegmentedControl } from './segmented-control';
 
-import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
+import { AppRadius, AppSpacing } from '@/constants/app-theme';
 
 export type TempUnit = 'c' | 'f';
-export type ThemeMode = 'light' | 'dark' | 'auto';
 
 const UNIT_OPTIONS: { key: TempUnit; label: string }[] = [
   { key: 'c', label: '°C' },
   { key: 'f', label: '°F' },
 ];
 
-const THEME_OPTIONS: { key: ThemeMode; label: string }[] = [
+const THEME_OPTIONS: { key: ThemePreference; label: string }[] = [
   { key: 'light', label: '☀️' },
   { key: 'dark', label: '🌙' },
   { key: 'auto', label: 'Auto' },
@@ -26,9 +26,11 @@ export function DisplayCard({
 }: {
   unit: TempUnit;
   onUnitChange: (next: TempUnit) => void;
-  theme: ThemeMode;
-  onThemeChange: (next: ThemeMode) => void;
+  theme: ThemePreference;
+  onThemeChange: (next: ThemePreference) => void;
 }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>표시 설정</Text>
@@ -52,19 +54,19 @@ export function DisplayCard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   card: {
     padding: AppSpacing.cardPad,
     borderRadius: AppRadius.card,
-    backgroundColor: AppColors.card,
+    backgroundColor: c.card,
     borderWidth: 1,
-    borderColor: AppColors.cardBorder,
+    borderColor: c.cardBorder,
     marginBottom: AppSpacing.cardGap,
   },
   title: {
     fontSize: 14,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
   row: {
     flexDirection: 'row',
@@ -78,11 +80,11 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: AppColors.title,
+    color: c.title,
   },
   rowDescription: {
     marginTop: 2,
     fontSize: 10,
-    color: AppColors.muted,
+    color: c.muted,
   },
-});
+}));

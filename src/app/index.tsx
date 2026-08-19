@@ -1,13 +1,16 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import { createStyles } from '@/theme/theme-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AiSummaryCard } from '@/components/home/ai-summary-card';
 import { DamLevelList } from '@/components/home/dam-level-list';
 import { HourlyRainCard } from '@/components/home/hourly-rain-card';
 import { WeeklyWeatherList } from '@/components/home/weekly-weather-list';
-import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
+import { AppRadius, AppSpacing } from '@/constants/app-theme';
 
 export default function HomeScreen() {
+  const styles = useStyles();
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -60,6 +63,8 @@ export default function HomeScreen() {
 }
 
 function WeatherStat({ icon, value, label }: { icon: string; value: string; label: string }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.stat}>
       <Text style={styles.statIcon}>{icon}</Text>
@@ -69,10 +74,10 @@ function WeatherStat({ icon, value, label }: { icon: string; value: string; labe
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createStyles((c) => ({
   safeArea: {
     flex: 1,
-    backgroundColor: AppColors.screen,
+    backgroundColor: c.screen,
   },
 
   container: {
@@ -90,13 +95,13 @@ const styles = StyleSheet.create({
   location: {
     fontSize: 16,
     fontWeight: '800',
-    color: AppColors.title,
+    color: c.title,
   },
 
   date: {
     marginTop: 3,
     fontSize: 11,
-    color: AppColors.muted,
+    color: c.muted,
   },
 
   locationButton: {
@@ -104,20 +109,20 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: AppColors.accentBorder,
-    backgroundColor: AppColors.accentSurface,
+    borderColor: c.accentBorder,
+    backgroundColor: c.accentSurface,
   },
 
   locationButtonText: {
     fontSize: 11,
     fontWeight: '700',
-    color: AppColors.accentText,
+    color: c.accentText,
   },
 
   weatherCard: {
     borderRadius: 20,
     padding: 18,
-    backgroundColor: AppColors.accentDeep,
+    backgroundColor: c.accentDeep,
     marginBottom: AppSpacing.cardGap,
   },
 
@@ -184,22 +189,22 @@ const styles = StyleSheet.create({
   alertCard: {
     padding: 14,
     borderRadius: AppRadius.card,
-    backgroundColor: '#FFFDF0',
+    backgroundColor: c.alertSurface,
     borderWidth: 1,
-    borderColor: '#F5DE85',
+    borderColor: c.alertBorder,
     marginBottom: AppSpacing.cardGap,
   },
 
   alertTitle: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#A66A00',
+    color: c.alertTitle,
   },
 
   alertText: {
     marginTop: 5,
     lineHeight: 18,
     fontSize: 12,
-    color: '#7A6200',
+    color: c.alertBody,
   },
-});
+}));
