@@ -1,8 +1,36 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import {
+  NativeSyntheticEvent,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextLayoutEventData,
+  View,
+} from 'react-native';
 
 import { HomeColors, HomeRadius, HomeSpacing } from '@/constants/home-theme';
 
+/** 접힌 상태에서 보여줄 본문 줄 수. */
+const COLLAPSED_LINES = 2;
+
 export function AiSummaryCard() {
+  const [expanded, setExpanded] = useState(false);
+  const [fullLines, setFullLines] = useState<number | null>(null);
+
+  const handleMeasure = useCallback((event: NativeSyntheticEvent<TextLayoutEventData>) => {
+    setFullLines(event.nativeEvent.lines.length);
+  }, []);
+
+  const body = (
+    <>
+      오늘 서울 강남구는 <Text style={styles.emphasis}>오전 10시~오후 6시 사이 집중호우</Text>가
+      예상됩니다. 최대 시간당 <Text style={styles.emphasis}>7.5㎜</Text>의 비가 내릴 수 있어 우산
+      없이는 외출이 어려워요.
+    </>
+  );
+
+  const overflows = fullLines !== null && fullLines > COLLAPSED_LINES;
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -16,15 +44,38 @@ export function AiSummaryCard() {
         </View>
       </View>
 
-      <Text style={styles.body}>
-        오늘 서울 강남구는 <Text style={styles.emphasis}>오전 10시~오후 6시 사이 집중호우</Text>가
-        예상됩니다. 최대 시간당 <Text style={styles.emphasis}>7.5㎜</Text>의 비가 내릴 수 있어 우산
-        없이는 외출이 어려워요.
-      </Text>
+      <View style={styles.bodyWrap}>
+        <Text style={styles.body} numberOfLines={expanded ? undefined : COLLAPSED_LINES}>
+          {body}
+        </Text>
 
-      <Pressable style={({ pressed }) => pressed && styles.pressed}>
-        <Text style={styles.link}>수자원 연계 분석 더 보기 ▼</Text>
-      </Pressable>
+        {/*
+          numberOfLines가 걸린 Text는 onTextLayout이 잘린 줄까지만 보고하므로
+          실제 줄 수를 알 수 없다. 그래서 같은 폭의 투명한 사본을 한 번만 그려
+          전체 줄 수를 재고, 측정이 끝나면 언마운트한다.
+        */}
+        {fullLines === null && (
+          <Text
+            style={[styles.body, styles.measurer]}
+            onTextLayout={handleMeasure}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants">
+            {body}
+          </Text>
+        )}
+      </View>
+
+      {overflows && (
+        <Pressable
+          onPress={() => setExpanded((prev) => !prev)}
+          accessibilityRole="button"
+          hitSlop={8}
+          style={({ pressed }) => pressed && styles.pressed}>
+          <Text style={styles.link}>
+            {expanded ? '수자원 연계 분석 접기 ▲' : '수자원 연계 분석 더 보기 ▼'}
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -68,11 +119,20 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: HomeColors.accentText,
   },
-  body: {
+  bodyWrap: {
     marginTop: 12,
+  },
+  body: {
     fontSize: 13,
     lineHeight: 21,
     color: HomeColors.body,
+  },
+  measurer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    opacity: 0,
   },
   emphasis: {
     fontWeight: '800',

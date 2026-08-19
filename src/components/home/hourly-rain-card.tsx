@@ -113,7 +113,9 @@ const styles = StyleSheet.create({
     color: HomeColors.muted,
   },
   chart: {
-    alignItems: 'flex-end',
+    // 위 기준 정렬이라 강수확률 줄이 가지런히 맞고, mm 라벨이 없는 컬럼(강수량 0)은
+    // 시각 라벨이 위로 올라온다 — Figma의 어긋난 베이스라인이 이 방향이다.
+    alignItems: 'flex-start',
     paddingTop: 14,
     paddingRight: 4,
   },
