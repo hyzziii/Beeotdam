@@ -30,6 +30,8 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
   const [query, setQuery] = useState('');
 
   const sidoList = useRef<FlatList<string>>(null);
+  /** 아직 현재 시/도로 스크롤하지 못했는지. 목록 크기가 정해질 때까지 기다린다. */
+  const pendingScroll = useRef(false);
 
   const keyword = query.trim();
 
@@ -49,24 +51,33 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
     onClose();
   };
 
+  /*
+   * 목록을 현재 시/도까지 내려준다. 전남광주처럼 아래쪽에 있는 시/도를 보고 있으면
+   * 목록은 서울부터 보여주는데 선택 표시는 화면 밖에 있어, 오른쪽에 전남광주 지역이
+   * 뜨는데 왼쪽은 서울이 맨 위라 어디가 골라졌는지 알 수 없다.
+   *
+   * scrollToIndex는 아직 그려지지 않은 항목으로 뛰면 예외를 던지므로, 줄 높이가
+   * 일정한 점을 이용해 위치를 직접 계산한다.
+   */
+  const scrollToActiveSido = () => {
+    // SIDO_LIST는 as const라 indexOf가 리터럴 타입만 받는다. 비교로 찾으면 그 제약이 없다.
+    const index = SIDO_LIST.findIndex((item) => item === activeRegion.sido);
+    if (index <= 0) return;
+
+    sidoList.current?.scrollToOffset({ offset: index * SIDO_ROW_HEIGHT, animated: false });
+  };
+
   // 시트를 닫았다 열면 지금 보는 지역에서 다시 시작하는 편이 자연스럽다
   const handleShow = () => {
     setSido(activeRegion.sido);
     setQuery('');
 
     /*
-     * 목록을 현재 시/도까지 내려준다. 전남광주처럼 아래쪽에 있는 시/도를 보고 있으면
-     * 목록은 서울부터 보여주는데 선택 표시는 화면 밖에 있어, 오른쪽에 전남광주 지역이
-     * 뜨는데 왼쪽은 서울이 맨 위라 어디가 골라졌는지 알 수 없다.
-     *
-     * scrollToIndex는 아직 그려지지 않은 항목으로 뛰면 예외를 던지므로, 줄 높이가
-     * 일정한 점을 이용해 위치를 직접 계산한다.
+     * 여기서 바로 스크롤하면 대개 무시된다. 시트가 보이기 시작한 시점에는 목록의 내용
+     * 크기가 아직 정해지지 않아 스크롤할 범위가 없기 때문이다. 그래서 표시만 해 두고
+     * 크기가 정해질 때(onContentSizeChange) 실제로 옮긴다.
      */
-    // SIDO_LIST는 as const라 indexOf가 리터럴 타입만 받는다. 비교로 찾으면 그 제약이 없다.
-    const index = SIDO_LIST.findIndex((item) => item === activeRegion.sido);
-    if (index > 0) {
-      sidoList.current?.scrollToOffset({ offset: index * SIDO_ROW_HEIGHT, animated: false });
-    }
+    pendingScroll.current = true;
   };
 
   return (
@@ -144,6 +155,11 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
                 data={SIDO_LIST}
                 keyExtractor={(item) => item}
                 showsVerticalScrollIndicator={false}
+                onContentSizeChange={() => {
+                  if (!pendingScroll.current) return;
+                  pendingScroll.current = false;
+                  scrollToActiveSido();
+                }}
                 renderItem={({ item }) => {
                   const current = !keyword && item === sido;
 
