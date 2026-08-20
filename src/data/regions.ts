@@ -315,7 +315,7 @@ export const regions: Region[] = [
     { code: '39010', sido: '제주', district: '제주시', lat: 33.438, lng: 126.5284, nx: 53, ny: 37 },
 ]
 
-/** 최근 본 지역으로 기억해 둘 개수. 넘치면 오래된 것부터 밀려난다. */
+/** 최근 본 지역으로 보여줄 개수. 넘치면 오래된 것부터 밀려난다. */
 export const MAX_RECENT_REGIONS = 5
 
 /** 처음 실행했을 때 보여줄 지역. */

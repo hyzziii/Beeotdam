@@ -49,6 +49,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     StorageKeys.activeRegion,
     DEFAULT_REGION_CODE,
   );
+  /**
+   * 기억해 두는 개수는 보여줄 개수보다 하나 많다.
+   *
+   * 지금 보는 지역은 '현재'로 따로 표시하므로 칩에서 뺀다. 딱 5개만 기억하면 그중
+   * 하나가 항상 현재 지역이라 칩이 4개밖에 안 남는다.
+   */
   const [recentCodes, setRecentCodes, recentLoaded] = usePersistedState<string[]>(
     StorageKeys.recentRegions,
     defaultRecent,
@@ -79,12 +85,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setRecentCodes((prev) =>
           [code, ...prev.filter((item) => item !== code && findRegion(item))].slice(
             0,
-            MAX_RECENT_REGIONS,
+            MAX_RECENT_REGIONS + 1,
           ),
         );
       },
-      // 지금 보는 곳은 '현재'로 따로 보여주므로 최근 목록에서는 뺀다
-      recentRegions: validRecent.filter((region) => region.code !== activeRegion.code),
+      // 지금 보는 곳은 '현재'로 따로 보여주므로 빼고, 남은 것에서 앞의 다섯을 준다
+      recentRegions: validRecent
+        .filter((region) => region.code !== activeRegion.code)
+        .slice(0, MAX_RECENT_REGIONS),
       notifications: {
         // 앱 업데이트로 알림 항목이 늘어나면 저장된 값에는 그 키가 없다.
         // 기본값을 깔고 저장된 값을 덮어 새 항목도 기본값으로 켜지게 한다.
