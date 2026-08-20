@@ -7,14 +7,27 @@ import { DamLevelList } from '@/components/home/dam-level-list';
 import { RegionPicker } from '@/components/region/region-picker';
 import { HourlyRainCard } from '@/components/home/hourly-rain-card';
 import { WeeklyWeatherList } from '@/components/home/weekly-weather-list';
+import { umbrellaAdvice } from '@/api/kma';
+import { Skeleton } from '@/components/common/skeleton';
 import { AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useSettings } from '@/settings/settings-context';
+import { useWeather } from '@/weather/weather-context';
 
 export default function HomeScreen() {
   const styles = useStyles();
 
   const { activeRegion } = useSettings();
+  const { data, fetchedAt, loading, error, empty } = useWeather();
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  const current = data?.current;
+  const today = data?.forecast.daily[0];
+  const hourly = data?.forecast.hourly;
+  // 오늘 남은 시간 중 가장 높은 강수확률. 카드의 '강수확률'이 이 값이다.
+  const peakProb = hourly?.length ? Math.max(...hourly.map((entry) => entry.prob)) : null;
+  const totalRain = hourly?.reduce((sum, entry) => sum + entry.amount, 0) ?? null;
+  // 비 소식이 없으면 null이라 카드를 아예 숨긴다
+  const umbrella = hourly ? umbrellaAdvice(hourly) : null;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -25,7 +38,7 @@ export default function HomeScreen() {
             <Text style={styles.location}>
               📍 {activeRegion.district}, {activeRegion.sido}
             </Text>
-            <Text style={styles.date}>2026년 8월 18일 · 오후 2:32</Text>
+            <Text style={styles.date}>{describeFreshness({ fetchedAt, loading, error })}</Text>
           </View>
 
           <Pressable
@@ -40,28 +53,62 @@ export default function HomeScreen() {
         <View style={styles.weatherCard}>
           <View style={styles.weatherTop}>
             <View>
-              <Text style={styles.temperature}>23°</Text>
-              <Text style={styles.weatherDescription}>흐리고 비</Text>
-              <Text style={styles.temperatureInfo}>최고 23° · 최저 16° · 체감 21°C</Text>
+              {empty ? (
+                <>
+                  <Skeleton width={110} height={52} />
+                  <View style={styles.skeletonGap}>
+                    <Skeleton width={80} height={18} />
+                  </View>
+                  <View style={styles.skeletonGap}>
+                    <Skeleton width={150} height={13} />
+                  </View>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.temperature}>{formatTemp(current?.temperature)}</Text>
+                  <Text style={styles.weatherDescription}>{today?.desc ?? '—'}</Text>
+                  <Text style={styles.temperatureInfo}>
+                    최고 {formatTemp(today?.high)} · 최저 {formatTemp(today?.low)}
+                  </Text>
+                </>
+              )}
             </View>
 
-            <Text style={styles.weatherIcon}>🌧️</Text>
+            <Text style={styles.weatherIcon}>{empty ? '　' : (today?.icon ?? '⛅')}</Text>
           </View>
 
           <View style={styles.weatherStats}>
-            <WeatherStat icon="☔" value="75%" label="강수확률" />
-            <WeatherStat icon="💧" value="32mm" label="예상 강수량" />
-            <WeatherStat icon="💦" value="82%" label="습도" />
+            <WeatherStat
+              icon="☔"
+              value={peakProb === null ? '—' : `${peakProb}%`}
+              label="강수확률"
+              loading={empty}
+            />
+            <WeatherStat
+              icon="💧"
+              value={totalRain === null ? '—' : `${totalRain.toFixed(1)}mm`}
+              label="예상 강수량"
+              loading={empty}
+            />
+            <WeatherStat
+              icon="💦"
+              value={current?.humidity === null || current?.humidity === undefined ? '—' : `${current.humidity}%`}
+              label="습도"
+              loading={empty}
+            />
           </View>
         </View>
 
-        {/* 우산 알림 */}
-        <View style={styles.alertCard}>
-          <Text style={styles.alertTitle}>☂️ 우산 챙기세요!</Text>
-          <Text style={styles.alertText}>
-            11시~15시 비가 와요. 14시에 강수확률이 85%로 가장 높아요.
-          </Text>
-        </View>
+        {/* 우산 알림. 비 올 시간대가 있을 때만 나온다. */}
+        {umbrella && (
+          <View style={styles.alertCard}>
+            <Text style={styles.alertTitle}>☂️ 우산 챙기세요!</Text>
+            <Text style={styles.alertText}>
+              {umbrella.from}~{umbrella.to} 비가 와요. {umbrella.peakHour}에 강수확률이{' '}
+              {umbrella.peakProb}%로 가장 높아요.
+            </Text>
+          </View>
+        )}
 
         <HourlyRainCard />
         <DamLevelList />
@@ -73,21 +120,75 @@ export default function HomeScreen() {
   );
 }
 
-function WeatherStat({ icon, value, label }: { icon: string; value: string; label: string }) {
+function WeatherStat({
+  icon,
+  value,
+  label,
+  loading,
+}: {
+  icon: string;
+  value: string;
+  label: string;
+  loading: boolean;
+}) {
   const styles = useStyles();
 
   return (
     <View style={styles.stat}>
       <Text style={styles.statIcon}>{icon}</Text>
-      <Text style={styles.statValue}>{value}</Text>
+      {loading ? (
+        <View style={styles.statSkeleton}>
+          <Skeleton width={44} height={18} />
+        </View>
+      ) : (
+        <Text style={styles.statValue}>{value}</Text>
+      )}
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
 
+/** 기온을 '23°'로. 값이 없으면 자리만 남긴다. */
+function formatTemp(value: number | null | undefined) {
+  return value === null || value === undefined ? '—' : `${Math.round(value)}°`;
+}
+
+/**
+ * 헤더에 쓰는 '언제 기준인지' 문구.
+ *
+ * 캐시를 먼저 보여주는 이상 이 표시가 없으면 오래된 값을 현재값처럼 읽게 된다.
+ * 갱신 중인지, 실패해서 옛 값을 보고 있는지도 여기서 알린다.
+ */
+function describeFreshness({
+  fetchedAt,
+  loading,
+  error,
+}: {
+  fetchedAt: number | null;
+  loading: boolean;
+  error: string | null;
+}) {
+  if (fetchedAt === null) return loading ? '불러오는 중…' : '아직 불러오지 못했어요';
+
+  const at = new Date(fetchedAt);
+  const time = at.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+  const date = at.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+  const stamp = `${date} ${time} 기준`;
+
+  if (loading) return `${stamp} · 갱신 중`;
+  if (error) return `${stamp} · 갱신 실패`;
+  return stamp;
+}
+
 const useStyles = createStyles((c) => ({
   locationPressed: {
     opacity: 0.7,
+  },
+  skeletonGap: {
+    marginTop: 8,
+  },
+  statSkeleton: {
+    marginVertical: 3,
   },
   safeArea: {
     flex: 1,

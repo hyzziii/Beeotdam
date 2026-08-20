@@ -6,6 +6,7 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
 import { SettingsProvider, useSettings } from '@/settings/settings-context';
 import { ThemeProvider, useThemeControl } from '@/theme/theme-context';
+import { WeatherProvider } from '@/weather/weather-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -13,7 +14,9 @@ export default function TabLayout() {
   return (
     <ThemeProvider>
       <SettingsProvider>
-        <ThemedApp />
+        <WeatherProvider>
+          <ThemedApp />
+        </WeatherProvider>
       </SettingsProvider>
     </ThemeProvider>
   );

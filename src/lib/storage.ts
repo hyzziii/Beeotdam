@@ -47,3 +47,13 @@ export const StorageKeys = {
   notifications: 'notifications',
   tempUnit: 'temp-unit',
 } as const;
+
+/**
+ * 지역별 날씨 캐시 키.
+ *
+ * 마지막으로 받아온 값을 저장해 두고 다음 실행 때 즉시 보여준다. 지역마다 따로
+ * 저장하므로 지역을 옮겨 다녀도 각자의 마지막 값이 남는다.
+ */
+export function weatherCacheKey(regionCode: string) {
+  return `weather:${regionCode}`;
+}
