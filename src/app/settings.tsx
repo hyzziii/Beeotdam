@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { createStyles, useThemeControl } from '@/theme/theme-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { RegionPicker } from '@/components/region/region-picker';
 import { AppInfoCard } from '@/components/settings/app-info-card';
 import { DisplayCard } from '@/components/settings/display-card';
 import { NotificationCard } from '@/components/settings/notification-card';
@@ -14,9 +16,10 @@ export default function SettingsScreen() {
   const styles = useStyles();
 
   // 설정값은 화면 로컬 상태가 아니라 앱 전역 Provider가 들고 기기에 저장한다
-  const { selectedRegions, toggleRegion, notifications, toggleNotification, unit, setUnit } =
-    useSettings();
+  const { notifications, toggleNotification, unit, setUnit } = useSettings();
   const { preference, setPreference } = useThemeControl();
+
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -27,7 +30,7 @@ export default function SettingsScreen() {
         </Text>
 
         <View style={styles.body}>
-          <RegionCard selected={selectedRegions} onToggle={toggleRegion} />
+          <RegionCard onAdd={() => setPickerOpen(true)} />
           <NotificationCard enabled={notifications} onToggle={toggleNotification} />
           <DisplayCard
             unit={unit}
@@ -38,6 +41,8 @@ export default function SettingsScreen() {
           <AppInfoCard />
         </View>
       </ScrollView>
+
+      <RegionPicker visible={pickerOpen} onClose={() => setPickerOpen(false)} />
     </SafeAreaView>
   );
 }

@@ -1,14 +1,20 @@
-import { ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { createStyles } from '@/theme/theme-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DamLevelList } from '@/components/home/dam-level-list';
+import { RegionPicker } from '@/components/region/region-picker';
 import { HourlyRainCard } from '@/components/home/hourly-rain-card';
 import { WeeklyWeatherList } from '@/components/home/weekly-weather-list';
 import { AppRadius, AppSpacing } from '@/constants/app-theme';
+import { useSettings } from '@/settings/settings-context';
 
 export default function HomeScreen() {
   const styles = useStyles();
+
+  const { activeRegion } = useSettings();
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -16,13 +22,18 @@ export default function HomeScreen() {
         {/* 헤더 */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.location}>📍 강남구, 서울</Text>
+            <Text style={styles.location}>
+              📍 {activeRegion.district}, {activeRegion.sido}
+            </Text>
             <Text style={styles.date}>2026년 8월 18일 · 오후 2:32</Text>
           </View>
 
-          <View style={styles.locationButton}>
+          <Pressable
+            onPress={() => setPickerOpen(true)}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.locationButton, pressed && styles.locationPressed]}>
             <Text style={styles.locationButtonText}>지역 변경</Text>
-          </View>
+          </Pressable>
         </View>
 
         {/* 현재 날씨 */}
@@ -56,6 +67,8 @@ export default function HomeScreen() {
         <DamLevelList />
         <WeeklyWeatherList />
       </ScrollView>
+
+      <RegionPicker visible={pickerOpen} onClose={() => setPickerOpen(false)} />
     </SafeAreaView>
   );
 }
@@ -73,6 +86,9 @@ function WeatherStat({ icon, value, label }: { icon: string; value: string; labe
 }
 
 const useStyles = createStyles((c) => ({
+  locationPressed: {
+    opacity: 0.7,
+  },
   safeArea: {
     flex: 1,
     backgroundColor: c.screen,
