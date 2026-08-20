@@ -154,6 +154,7 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
                 renderItem={({ item }) => (
                   <DistrictRow
                     region={item}
+                    showSido={!!keyword}
                     viewing={item.code === activeRegion.code}
                     onPick={() => handlePick(item)}
                   />
@@ -170,10 +171,12 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
 
 function DistrictRow({
   region,
+  showSido,
   viewing,
   onPick,
 }: {
   region: Region;
+  showSido: boolean;
   viewing: boolean;
   onPick: () => void;
 }) {
@@ -185,8 +188,10 @@ function DistrictRow({
       accessibilityRole="button"
       accessibilityLabel={`${region.sido} ${region.district} 보기`}
       style={({ pressed }) => [styles.districtRow, pressed && styles.pressed]}>
+      {/* 왼쪽에서 시/도를 이미 골랐으므로 목록에는 구 이름만 둔다. 검색 중에는
+          결과가 시/도를 가로지르므로 그때만 어디인지 함께 보여준다. */}
       <Text style={[styles.districtName, viewing && styles.districtNameCurrent]}>
-        <Text style={styles.districtSido}>{region.sido} </Text>
+        {showSido && <Text style={styles.districtSido}>{region.sido} </Text>}
         {region.district}
       </Text>
 
