@@ -1,11 +1,10 @@
 import { Image } from 'expo-image';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-const INITIAL_SCALE_FACTOR = Dimensions.get('screen').height / 90;
 const DURATION = 600;
 
 /**
@@ -66,16 +65,6 @@ export function AnimatedSplashOverlay({ ready = true }: { ready?: boolean }) {
     </View>
   );
 }
-
-const keyframe = new Keyframe({
-  0: {
-    transform: [{ scale: INITIAL_SCALE_FACTOR }],
-  },
-  100: {
-    transform: [{ scale: 1 }],
-    easing: Easing.elastic(0.7),
-  },
-});
 
 const logoKeyframe = new Keyframe({
   0: {

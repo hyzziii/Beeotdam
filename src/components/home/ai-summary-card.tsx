@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import {
   NativeSyntheticEvent,
   Pressable,
-  StyleSheet,
   Text,
   TextLayoutEventData,
   View,
