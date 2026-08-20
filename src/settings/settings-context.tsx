@@ -1,7 +1,13 @@
 import { createContext, useContext, useMemo } from 'react';
 
 import { TempUnit } from '@/components/settings/display-card';
-import { DEFAULT_REGION_CODE, MAX_REGIONS, Region, findRegion, notificationOptions } from '@/data';
+import {
+  DEFAULT_REGION_CODE,
+  MAX_RECENT_REGIONS,
+  Region,
+  findRegion,
+  notificationOptions,
+} from '@/data';
 import { usePersistedState } from '@/hooks/use-persisted-state';
 import { StorageKeys } from '@/lib/storage';
 
@@ -12,17 +18,15 @@ const defaultNotifications: NotificationState = Object.fromEntries(
   notificationOptions.map((option) => [option.id, option.defaultOn]),
 );
 
-const defaultRegions = [DEFAULT_REGION_CODE];
+const defaultRecent = [DEFAULT_REGION_CODE];
 
 type SettingsValue = {
-  /** 홈이 보여주는 지역. 관심 지역에 없어도 볼 수 있다. */
+  /** 홈이 보여주는 지역. */
   activeRegion: Region;
+  /** 지역을 바꾼다. 최근 목록에도 자동으로 쌓인다. */
   setActiveRegion: (code: string) => void;
-  /** 관심 지역 코드들. 별표로 담고 뺀다. */
-  selectedRegions: string[];
-  toggleRegion: (code: string) => void;
-  /** 관심 지역이 꽉 차 더 담을 수 없으면 true. */
-  regionsFull: boolean;
+  /** 최근 본 지역. 최근 것이 앞이고 지금 보는 곳은 빠져 있다. */
+  recentRegions: Region[];
   notifications: NotificationState;
   toggleNotification: (id: string, next: boolean) => void;
   unit: TempUnit;
@@ -41,46 +45,46 @@ const SettingsContext = createContext<SettingsValue | null>(null);
  * 불러오는 홈)에서 같은 값이 필요해질 때 끌어올릴 곳이 없다.
  */
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [activeRegionCode, setActiveRegion, activeLoaded] = usePersistedState<string>(
+  const [activeRegionCode, setActiveRegionCode, activeLoaded] = usePersistedState<string>(
     StorageKeys.activeRegion,
     DEFAULT_REGION_CODE,
   );
-  const [selectedRegions, setSelectedRegions, regionsLoaded] = usePersistedState<string[]>(
-    StorageKeys.selectedRegions,
-    defaultRegions,
+  const [recentCodes, setRecentCodes, recentLoaded] = usePersistedState<string[]>(
+    StorageKeys.recentRegions,
+    defaultRecent,
   );
   const [notifications, setNotifications, notificationsLoaded] =
     usePersistedState<NotificationState>(StorageKeys.notifications, defaultNotifications);
   const [unit, setUnit, unitLoaded] = usePersistedState<TempUnit>(StorageKeys.tempUnit, 'c');
 
   /**
-   * 목록에 없는 코드는 버린다.
-   *
-   * 앱을 쓰던 중에 지역 데이터가 바뀌면(샘플 5개 → 전국 254개, 또는 행정구역 개편)
-   * 기기에는 예전 코드가 남는다. 그대로 두면 화면에는 안 보이면서 관심 지역 자리만
-   * 차지해, 4개만 담겼는데 5개로 꽉 찼다고 하는 상태가 된다.
+   * 목록에 없는 코드는 버린다. 앱을 쓰던 중에 지역 데이터가 바뀌면(행정구역 개편 등)
+   * 기기에는 예전 코드가 남는데, 그대로 두면 화면에 안 보이면서 자리만 차지한다.
    */
-  const validRegions = useMemo(
-    () => selectedRegions.filter((code) => findRegion(code)),
-    [selectedRegions],
+  const validRecent = useMemo(
+    () => recentCodes.map(findRegion).filter((region) => region !== undefined),
+    [recentCodes],
   );
+
+  // 저장된 코드가 목록에 없으면 기본 지역으로 되돌린다. 이 값은 항상 실재해야 한다.
+  const activeRegion = findRegion(activeRegionCode) ?? findRegion(DEFAULT_REGION_CODE)!;
 
   const value = useMemo<SettingsValue>(
     () => ({
-      // 저장된 코드가 목록에 없을 수 있다. 행정구역이 개편되면 예전 코드가 남으므로
-      // 그때는 기본 지역으로 되돌린다. 이 값은 항상 실재하는 지역이어야 한다.
-      activeRegion: findRegion(activeRegionCode) ?? findRegion(DEFAULT_REGION_CODE)!,
-      setActiveRegion,
-      selectedRegions: validRegions,
-      regionsFull: validRegions.length >= MAX_REGIONS,
-      toggleRegion: (code: string) =>
-        // 걸러낸 목록을 기준으로 다시 쓴다. 없는 코드는 이때 저장소에서도 사라진다.
-        setSelectedRegions((prev) => {
-          const valid = prev.filter((item) => findRegion(item));
-          if (valid.includes(code)) return valid.filter((item) => item !== code);
-          // 한도를 넘기면 조용히 무시한다. 화면이 미리 막지만 여기서도 지킨다.
-          return valid.length >= MAX_REGIONS ? valid : [...valid, code];
-        }),
+      activeRegion,
+      setActiveRegion: (code: string) => {
+        setActiveRegionCode(code);
+        // 최근 목록 맨 앞으로 올린다. 이미 있으면 자리를 옮기는 셈이고, 넘치면
+        // 뒤에서 잘린다. 없는 코드는 이때 저장소에서도 함께 사라진다.
+        setRecentCodes((prev) =>
+          [code, ...prev.filter((item) => item !== code && findRegion(item))].slice(
+            0,
+            MAX_RECENT_REGIONS,
+          ),
+        );
+      },
+      // 지금 보는 곳은 '현재'로 따로 보여주므로 최근 목록에서는 뺀다
+      recentRegions: validRecent.filter((region) => region.code !== activeRegion.code),
       notifications: {
         // 앱 업데이트로 알림 항목이 늘어나면 저장된 값에는 그 키가 없다.
         // 기본값을 깔고 저장된 값을 덮어 새 항목도 기본값으로 켜지게 한다.
@@ -91,19 +95,19 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setNotifications((prev) => ({ ...prev, [id]: next })),
       unit,
       setUnit,
-      ready: activeLoaded && regionsLoaded && notificationsLoaded && unitLoaded,
+      ready: activeLoaded && recentLoaded && notificationsLoaded && unitLoaded,
     }),
     [
-      activeRegionCode,
-      setActiveRegion,
-      validRegions,
-      setSelectedRegions,
+      activeRegion,
+      setActiveRegionCode,
+      validRecent,
+      setRecentCodes,
       notifications,
       setNotifications,
       unit,
       setUnit,
       activeLoaded,
-      regionsLoaded,
+      recentLoaded,
       notificationsLoaded,
       unitLoaded,
     ],

@@ -40,9 +40,10 @@ export async function saveValue<T>(key: string, value: T): Promise<void> {
 /** 저장 키 모음. 문자열을 여기저기 적으면 오타로 값이 사라지므로 한곳에 모은다. */
 export const StorageKeys = {
   themePreference: 'theme-preference',
-  /** 홈이 보여주는 지역 하나. 관심 지역과 별개다. */
+  /** 홈이 보여주는 지역 하나. */
   activeRegion: 'active-region',
-  selectedRegions: 'selected-regions',
+  /** 최근 본 지역 코드들. 최근 것이 앞이다. */
+  recentRegions: 'recent-regions',
   notifications: 'notifications',
   tempUnit: 'temp-unit',
 } as const;

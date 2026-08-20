@@ -3,15 +3,15 @@ import { FlatList, Modal, Pressable, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppRadius, AppSpacing } from '@/constants/app-theme';
-import { MAX_REGIONS, Region, SIDO_LIST, regions } from '@/data';
+import { Region, SIDO_LIST, regions } from '@/data';
 import { useSettings } from '@/settings/settings-context';
 import { createStyles, useAppTheme } from '@/theme/theme-context';
 
 /**
  * 지역을 고르는 바텀시트.
  *
- * 탭과 별표가 서로 다른 일을 한다. 행을 탭하면 그 지역을 보게 되고(activeRegion),
- * 별표를 누르면 관심 지역에 담긴다. 관심 지역이 아닌 곳도 볼 수 있다.
+ * 고르면 그 지역을 보게 되고, 본 곳은 최근 목록에 자동으로 쌓인다. 담아두는 조작이
+ * 따로 없어 사용자가 관리할 것이 없다.
  *
  * expo-router의 formSheet 대신 Modal로 직접 그린다. 이 앱은 Stack이 아니라
  * expo-router/ui의 Tabs 위에 올라가 있어 formSheet를 쓰려면 라우팅을 갈아야 하고,
@@ -21,8 +21,7 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
   const styles = useStyles();
   const theme = useAppTheme();
 
-  const { activeRegion, setActiveRegion, selectedRegions, toggleRegion, regionsFull } =
-    useSettings();
+  const { activeRegion, setActiveRegion, recentRegions } = useSettings();
 
   const [sido, setSido] = useState(activeRegion.sido);
   const [query, setQuery] = useState('');
@@ -96,6 +95,24 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
             />
           </View>
 
+          {recentRegions.length > 0 && !keyword && (
+            <View style={styles.recent}>
+              <Text style={styles.columnHead}>최근 본 지역</Text>
+              <View style={styles.chips}>
+                {recentRegions.map((region) => (
+                  <Pressable
+                    key={region.code}
+                    onPress={() => handlePick(region)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${region.sido} ${region.district} 보기`}
+                    style={({ pressed }) => [styles.chip, pressed && styles.pressed]}>
+                    <Text style={styles.chipText}>{region.district}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          )}
+
           <View style={styles.columns}>
             {/* 검색 중에는 결과가 시/도를 가로지르므로 왼쪽 선택이 의미를 잃는다 */}
             <View style={[styles.sidoColumn, !!keyword && styles.dimmed]}>
@@ -141,21 +158,13 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
                     region={item}
                     showSido={!!keyword}
                     viewing={item.code === activeRegion.code}
-                    starred={selectedRegions.includes(item.code)}
-                    blocked={regionsFull && !selectedRegions.includes(item.code)}
                     onPick={() => handlePick(item)}
-                    onToggleStar={() => toggleRegion(item.code)}
                   />
                 )}
               />
             </View>
           </View>
 
-          <Text style={styles.hint}>
-            {regionsFull
-              ? `관심 지역이 ${MAX_REGIONS}개로 꽉 찼어요. 별표를 눌러 빼면 담을 수 있어요.`
-              : `행을 누르면 그 지역을 보고, ★를 누르면 관심 지역에 담겨요.`}
-          </Text>
         </SafeAreaView>
       </View>
     </Modal>
@@ -166,18 +175,12 @@ function DistrictRow({
   region,
   showSido,
   viewing,
-  starred,
-  blocked,
   onPick,
-  onToggleStar,
 }: {
   region: Region;
   showSido: boolean;
   viewing: boolean;
-  starred: boolean;
-  blocked: boolean;
   onPick: () => void;
-  onToggleStar: () => void;
 }) {
   const styles = useStyles();
 
@@ -193,18 +196,6 @@ function DistrictRow({
         </Text>
         {showSido && <Text style={styles.districtSido}>{region.sido}</Text>}
       </View>
-
-      <Pressable
-        onPress={() => !blocked && onToggleStar()}
-        accessibilityRole="button"
-        accessibilityState={{ checked: starred, disabled: blocked }}
-        accessibilityLabel={starred ? '관심 지역에서 빼기' : '관심 지역에 담기'}
-        hitSlop={10}
-        style={({ pressed }) => [styles.star, pressed && !blocked && styles.pressed]}>
-        <Text style={[styles.starGlyph, starred && styles.starGlyphOn, blocked && styles.dimmed]}>
-          {starred ? '★' : '☆'}
-        </Text>
-      </Pressable>
 
       <View style={[styles.check, viewing && styles.checkOn]}>
         {viewing && <Text style={styles.checkGlyph}>✓</Text>}
@@ -295,7 +286,7 @@ const useStyles = createStyles((c) => ({
   columns: {
     flexDirection: 'row',
     marginTop: 14,
-    height: 420,
+    height: 400,
   },
   columnHead: {
     fontSize: 10,
@@ -357,16 +348,26 @@ const useStyles = createStyles((c) => ({
     fontSize: 10,
     color: c.muted,
   },
-  star: {
-    width: 26,
-    alignItems: 'center',
+  recent: {
+    marginTop: 14,
   },
-  starGlyph: {
-    fontSize: 17,
-    color: c.muted,
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
   },
-  starGlyphOn: {
-    color: '#F5A524',
+  chip: {
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: AppRadius.chip,
+    backgroundColor: c.card,
+    borderWidth: 1,
+    borderColor: c.cardBorder,
+  },
+  chipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: c.body,
   },
   check: {
     width: 22,

@@ -1,13 +1,10 @@
-import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { createStyles, useThemeControl } from '@/theme/theme-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { RegionPicker } from '@/components/region/region-picker';
 import { AppInfoCard } from '@/components/settings/app-info-card';
 import { DisplayCard } from '@/components/settings/display-card';
 import { NotificationCard } from '@/components/settings/notification-card';
-import { RegionCard } from '@/components/settings/region-card';
 import { AppSpacing } from '@/constants/app-theme';
 import { appInfo } from '@/data';
 import { useSettings } from '@/settings/settings-context';
@@ -19,8 +16,6 @@ export default function SettingsScreen() {
   const { notifications, toggleNotification, unit, setUnit } = useSettings();
   const { preference, setPreference } = useThemeControl();
 
-  const [pickerOpen, setPickerOpen] = useState(false);
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -30,7 +25,6 @@ export default function SettingsScreen() {
         </Text>
 
         <View style={styles.body}>
-          <RegionCard onAdd={() => setPickerOpen(true)} />
           <NotificationCard enabled={notifications} onToggle={toggleNotification} />
           <DisplayCard
             unit={unit}
@@ -41,8 +35,6 @@ export default function SettingsScreen() {
           <AppInfoCard />
         </View>
       </ScrollView>
-
-      <RegionPicker visible={pickerOpen} onClose={() => setPickerOpen(false)} />
     </SafeAreaView>
   );
 }
