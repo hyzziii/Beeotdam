@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, Text, TextInput, View } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { FlatList, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppRadius, AppSpacing } from '@/constants/app-theme';
@@ -17,6 +17,9 @@ import { createStyles, useAppTheme } from '@/theme/theme-context';
  * expo-router/ui의 Tabs 위에 올라가 있어 formSheet를 쓰려면 라우팅을 갈아야 하고,
  * 시트 손잡이(sheetGrabberVisible)는 iOS 전용이라 안드로이드에서 안 보인다.
  */
+/** 시/도 한 줄의 높이. 현재 시/도로 스크롤할 위치를 계산하는 데 쓴다. */
+const SIDO_ROW_HEIGHT = 44;
+
 export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const styles = useStyles();
   const theme = useAppTheme();
@@ -25,6 +28,8 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
 
   const [sido, setSido] = useState(activeRegion.sido);
   const [query, setQuery] = useState('');
+
+  const sidoList = useRef<FlatList<string>>(null);
 
   const keyword = query.trim();
 
@@ -48,6 +53,20 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
   const handleShow = () => {
     setSido(activeRegion.sido);
     setQuery('');
+
+    /*
+     * 목록을 현재 시/도까지 내려준다. 전남광주처럼 아래쪽에 있는 시/도를 보고 있으면
+     * 목록은 서울부터 보여주는데 선택 표시는 화면 밖에 있어, 오른쪽에 전남광주 지역이
+     * 뜨는데 왼쪽은 서울이 맨 위라 어디가 골라졌는지 알 수 없다.
+     *
+     * scrollToIndex는 아직 그려지지 않은 항목으로 뛰면 예외를 던지므로, 줄 높이가
+     * 일정한 점을 이용해 위치를 직접 계산한다.
+     */
+    // SIDO_LIST는 as const라 indexOf가 리터럴 타입만 받는다. 비교로 찾으면 그 제약이 없다.
+    const index = SIDO_LIST.findIndex((item) => item === activeRegion.sido);
+    if (index > 0) {
+      sidoList.current?.scrollToOffset({ offset: index * SIDO_ROW_HEIGHT, animated: false });
+    }
   };
 
   return (
@@ -96,7 +115,12 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
           {recentRegions.length > 0 && !keyword && (
             <View style={styles.recent}>
               <Text style={styles.columnHead}>최근 본 지역</Text>
-              <View style={styles.chips}>
+              {/* 이름이 길어 줄바꿈하면 칩 개수에 따라 목록이 밀려 내려간다.
+                  가로로 흘려보내면 몇 개가 담기든 높이가 그대로다. */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chips}>
                 {recentRegions.map((region) => (
                   <Pressable
                     key={region.code}
@@ -107,7 +131,7 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
                     <Text style={styles.chipText}>{regionLabel(region)}</Text>
                   </Pressable>
                 ))}
-              </View>
+              </ScrollView>
             </View>
           )}
 
@@ -116,6 +140,7 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
             <View style={[styles.sidoColumn, !!keyword && styles.dimmed]}>
               <Text style={styles.columnHead}>시 / 도</Text>
               <FlatList
+                ref={sidoList}
                 data={SIDO_LIST}
                 keyExtractor={(item) => item}
                 showsVerticalScrollIndicator={false}
@@ -303,7 +328,9 @@ const useStyles = createStyles((c) => ({
     paddingLeft: 12,
   },
   sidoRow: {
-    paddingVertical: 11,
+    // 높이를 고정해야 현재 시/도 위치를 계산해 스크롤할 수 있다
+    height: SIDO_ROW_HEIGHT,
+    justifyContent: 'center',
     paddingLeft: 8,
     borderRadius: 8,
   },
@@ -349,8 +376,9 @@ const useStyles = createStyles((c) => ({
   },
   chips: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 6,
+    // 마지막 칩이 오른쪽 끝에 붙지 않게 여유를 준다
+    paddingRight: 4,
   },
   chip: {
     paddingVertical: 7,
