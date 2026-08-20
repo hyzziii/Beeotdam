@@ -17,7 +17,7 @@ import { BaseTime, ultraSrtNcstBase, vilageFcstBase } from './kma-time';
 
 const BASE_URL = 'https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
 
-/** 단기예보는 3일치를 12개 항목으로 주므로 줄 수가 많다. 한 번에 다 받는다. */
+/** 실제 응답이 약 800줄(14개 항목 × 5일)이라 한 번에 다 받도록 넉넉히 잡는다. */
 const VILAGE_FCST_ROWS = 1000;
 const ULTRA_SRT_NCST_ROWS = 60;
 
@@ -41,12 +41,19 @@ interface NcstItem {
 
 /**
  * 강수량·적설은 숫자가 아니라 사람이 읽는 문자열로 온다.
- * '강수없음', '1.0mm', '30.0~50.0mm', '1mm 미만'이 섞여 있어 앞의 숫자만 뽑는다.
+ * 실제 응답에서 확인된 값: '강수없음', '0', '1.0mm', '2.0mm', '3.0mm', '1mm 미만', '적설없음'
+ *
+ * '미만'은 상한만 알려주므로 그 숫자를 그대로 쓰면 부풀려진다. 0으로 깎으면 '비가
+ * 조금은 온다'는 정보가 사라지므로 절반으로 본다.
  */
 function parseAmount(raw: string | undefined): number {
   if (!raw) return 0;
+
   const matched = raw.match(/\d+(\.\d+)?/);
-  return matched ? Number(matched[0]) : 0;
+  if (!matched) return 0; // '강수없음', '적설없음'
+
+  const value = Number(matched[0]);
+  return raw.includes('미만') ? value / 2 : value;
 }
 
 function parseNumber(raw: string | undefined): number | null {
@@ -250,8 +257,13 @@ function dayLabel(offset: number, date: Date) {
 }
 
 /**
- * 주간 목록용. 단기예보는 3일치까지만 주므로 결과도 최대 3개다.
- * 4일차 이후는 중기예보 API가 따로 필요하다.
+ * 주간 목록용.
+ *
+ * 실제 응답은 5일치가 오지만 양 끝이 잘려 있다. 발표 시각 이후만 오므로 오늘은 지난
+ * 시간이 없고, 마지막 날은 0시 한 칸만 실려 온다. 온전한 날과 부분적인 날이 섞여
+ * 나오므로 high/low가 null인 항목이 있을 수 있고, 화면이 그 경우를 감당해야 한다.
+ *
+ * 주간 7일을 채우려면 4일차 이후를 중기예보 API로 보태야 한다.
  */
 export function toDailyForecast(items: FcstItem[], now: Date): DailyForecast[] {
   const grouped = groupByDateTime(items);
