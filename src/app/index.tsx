@@ -7,10 +7,12 @@ import { DamLevelList } from '@/components/home/dam-level-list';
 import { RegionPicker } from '@/components/region/region-picker';
 import { HourlyRainCard } from '@/components/home/hourly-rain-card';
 import { WeeklyWeatherList } from '@/components/home/weekly-weather-list';
+import { ApiFailureKind } from '@/api/http';
 import { umbrellaAdvice } from '@/api/kma';
 import { Skeleton } from '@/components/common/skeleton';
 import { AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useSettings } from '@/settings/settings-context';
+import { failureMessage } from '@/weather/failure-message';
 import { useWeather } from '@/weather/weather-context';
 
 export default function HomeScreen() {
@@ -166,9 +168,14 @@ function describeFreshness({
 }: {
   fetchedAt: number | null;
   loading: boolean;
-  error: string | null;
+  error: ApiFailureKind | null;
 }) {
-  if (fetchedAt === null) return loading ? '불러오는 중…' : '아직 불러오지 못했어요';
+  // 보여줄 값이 아직 없을 때는 이유를 밝힌다. '불러오지 못했어요'만 있으면
+  // 키를 안 넣은 것인지 네트워크가 끊긴 것인지 알 수 없다.
+  if (fetchedAt === null) {
+    if (loading) return '불러오는 중…';
+    return error ? failureMessage(error) : '아직 불러오지 못했어요';
+  }
 
   const at = new Date(fetchedAt);
   const time = at.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
@@ -176,7 +183,7 @@ function describeFreshness({
   const stamp = `${date} ${time} 기준`;
 
   if (loading) return `${stamp} · 갱신 중`;
-  if (error) return `${stamp} · 갱신 실패`;
+  if (error) return `${stamp} · ${failureMessage(error)}`;
   return stamp;
 }
 
