@@ -20,14 +20,14 @@ export function RegionCard({
 
       <View style={styles.list}>
         {regions.map((region) => {
-          const checked = selected.includes(region.id);
+          const checked = selected.includes(region.code);
           // 한도에 찼으면 이미 담긴 항목만 눌러서 뺄 수 있다
           const blocked = !checked && selected.length >= MAX_REGIONS;
 
           return (
             <Pressable
-              key={region.id}
-              onPress={() => !blocked && onToggle(region.id)}
+              key={region.code}
+              onPress={() => !blocked && onToggle(region.code)}
               accessibilityRole="checkbox"
               accessibilityState={{ checked, disabled: blocked }}
               style={({ pressed }) => [
@@ -38,7 +38,7 @@ export function RegionCard({
               ]}>
               <Text style={styles.pin}>📍</Text>
               <Text style={[styles.name, checked && styles.nameChecked]}>
-                {region.district}, {region.city}
+                {region.district}, {region.sido}
               </Text>
 
               <View style={[styles.circle, checked && styles.circleChecked]}>

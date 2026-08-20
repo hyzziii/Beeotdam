@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo } from 'react';
 
 import { TempUnit } from '@/components/settings/display-card';
-import { notificationOptions } from '@/data';
+import { DEFAULT_REGION_CODE, notificationOptions } from '@/data';
 import { usePersistedState } from '@/hooks/use-persisted-state';
 import { StorageKeys } from '@/lib/storage';
 
@@ -12,7 +12,7 @@ const defaultNotifications: NotificationState = Object.fromEntries(
   notificationOptions.map((option) => [option.id, option.defaultOn]),
 );
 
-const defaultRegions = ['gangnam'];
+const defaultRegions = [DEFAULT_REGION_CODE];
 
 type SettingsValue = {
   selectedRegions: string[];

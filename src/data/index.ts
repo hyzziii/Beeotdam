@@ -3,5 +3,6 @@
  * 사용하는 쪽은 계속 `@/data` 한 곳만 바라보면 된다.
  */
 export * from './dams'
+export * from './regions'
 export * from './weather'
 export * from './settings'
