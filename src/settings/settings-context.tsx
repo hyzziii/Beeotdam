@@ -53,19 +53,33 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     usePersistedState<NotificationState>(StorageKeys.notifications, defaultNotifications);
   const [unit, setUnit, unitLoaded] = usePersistedState<TempUnit>(StorageKeys.tempUnit, 'c');
 
+  /**
+   * 목록에 없는 코드는 버린다.
+   *
+   * 앱을 쓰던 중에 지역 데이터가 바뀌면(샘플 5개 → 전국 254개, 또는 행정구역 개편)
+   * 기기에는 예전 코드가 남는다. 그대로 두면 화면에는 안 보이면서 관심 지역 자리만
+   * 차지해, 4개만 담겼는데 5개로 꽉 찼다고 하는 상태가 된다.
+   */
+  const validRegions = useMemo(
+    () => selectedRegions.filter((code) => findRegion(code)),
+    [selectedRegions],
+  );
+
   const value = useMemo<SettingsValue>(
     () => ({
       // 저장된 코드가 목록에 없을 수 있다. 행정구역이 개편되면 예전 코드가 남으므로
       // 그때는 기본 지역으로 되돌린다. 이 값은 항상 실재하는 지역이어야 한다.
       activeRegion: findRegion(activeRegionCode) ?? findRegion(DEFAULT_REGION_CODE)!,
       setActiveRegion,
-      selectedRegions,
-      regionsFull: selectedRegions.length >= MAX_REGIONS,
+      selectedRegions: validRegions,
+      regionsFull: validRegions.length >= MAX_REGIONS,
       toggleRegion: (code: string) =>
+        // 걸러낸 목록을 기준으로 다시 쓴다. 없는 코드는 이때 저장소에서도 사라진다.
         setSelectedRegions((prev) => {
-          if (prev.includes(code)) return prev.filter((item) => item !== code);
+          const valid = prev.filter((item) => findRegion(item));
+          if (valid.includes(code)) return valid.filter((item) => item !== code);
           // 한도를 넘기면 조용히 무시한다. 화면이 미리 막지만 여기서도 지킨다.
-          return prev.length >= MAX_REGIONS ? prev : [...prev, code];
+          return valid.length >= MAX_REGIONS ? valid : [...valid, code];
         }),
       notifications: {
         // 앱 업데이트로 알림 항목이 늘어나면 저장된 값에는 그 키가 없다.
@@ -82,7 +96,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     [
       activeRegionCode,
       setActiveRegion,
-      selectedRegions,
+      validRegions,
       setSelectedRegions,
       notifications,
       setNotifications,
