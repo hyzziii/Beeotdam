@@ -5,7 +5,8 @@ import Animated, { Keyframe, Easing } from 'react-native-reanimated';
 import classes from './animated-icon.module.css';
 const DURATION = 300;
 
-export function AnimatedSplashOverlay() {
+/** 웹에는 네이티브 스플래시가 없다. ready는 네이티브와 시그니처를 맞추려고 받는다. */
+export function AnimatedSplashOverlay(_props: { ready?: boolean }) {
   return null;
 }
 

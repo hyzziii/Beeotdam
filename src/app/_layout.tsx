@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
+import { SettingsProvider, useSettings } from '@/settings/settings-context';
 import { ThemeProvider, useThemeControl } from '@/theme/theme-context';
 
 SplashScreen.preventAutoHideAsync();
@@ -11,7 +12,9 @@ SplashScreen.preventAutoHideAsync();
 export default function TabLayout() {
   return (
     <ThemeProvider>
-      <ThemedApp />
+      <SettingsProvider>
+        <ThemedApp />
+      </SettingsProvider>
     </ThemeProvider>
   );
 }
@@ -21,12 +24,13 @@ export default function TabLayout() {
  * 한다. useThemeControl은 Provider 안에서만 쓸 수 있어 컴포넌트를 한 겹 나눴다.
  */
 function ThemedApp() {
-  const { scheme } = useThemeControl();
+  const { scheme, ready: themeReady } = useThemeControl();
+  const { ready: settingsReady } = useSettings();
 
   return (
     <NavigationThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      <AnimatedSplashOverlay />
+      <AnimatedSplashOverlay ready={themeReady && settingsReady} />
       <AppTabs />
     </NavigationThemeProvider>
   );

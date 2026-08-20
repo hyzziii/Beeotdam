@@ -1,36 +1,22 @@
-import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { createStyles, useThemeControl } from '@/theme/theme-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppInfoCard } from '@/components/settings/app-info-card';
-import { DisplayCard, TempUnit } from '@/components/settings/display-card';
+import { DisplayCard } from '@/components/settings/display-card';
 import { NotificationCard } from '@/components/settings/notification-card';
 import { RegionCard } from '@/components/settings/region-card';
 import { AppSpacing } from '@/constants/app-theme';
-import { appInfo, notificationOptions } from '@/data';
-
-const defaultNotifications = Object.fromEntries(
-  notificationOptions.map((option) => [option.id, option.defaultOn]),
-);
+import { appInfo } from '@/data';
+import { useSettings } from '@/settings/settings-context';
 
 export default function SettingsScreen() {
   const styles = useStyles();
 
-  // 샘플 화면이라 상태는 메모리에만 둔다. 저장소를 붙이면 여기서 읽고 쓴다.
-  const [selectedRegions, setSelectedRegions] = useState<string[]>(['gangnam']);
-  const [notifications, setNotifications] = useState<Record<string, boolean>>(defaultNotifications);
-  const [unit, setUnit] = useState<TempUnit>('c');
-  // 테마는 화면 로컬 상태가 아니라 앱 전역 Provider가 들고 있다
+  // 설정값은 화면 로컬 상태가 아니라 앱 전역 Provider가 들고 기기에 저장한다
+  const { selectedRegions, toggleRegion, notifications, toggleNotification, unit, setUnit } =
+    useSettings();
   const { preference, setPreference } = useThemeControl();
-
-  const toggleRegion = (id: string) =>
-    setSelectedRegions((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-
-  const toggleNotification = (id: string, next: boolean) =>
-    setNotifications((prev) => ({ ...prev, [id]: next }));
 
   return (
     <SafeAreaView style={styles.safeArea}>

@@ -1,0 +1,46 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+/**
+ * 기기 디스크에 값을 저장하고 읽어온다.
+ *
+ * AsyncStorage는 문자열만 다루므로 JSON 변환을 여기서 처리하고, 키에도 앱 접두사를
+ * 붙여 다른 라이브러리가 쓰는 키와 섞이지 않게 한다. 저장소를 나중에 갈아끼우더라도
+ * 사용하는 쪽은 이 파일만 바라보므로 import는 바뀌지 않는다.
+ */
+
+const PREFIX = 'beeotdam:';
+
+const withPrefix = (key: string) => `${PREFIX}${key}`;
+
+/**
+ * 저장된 값을 읽는다. 값이 없거나 읽기에 실패하면 null.
+ *
+ * 저장소 오류로 앱이 죽으면 안 되므로 삼키고 null을 돌려준다. 호출하는 쪽은 그때
+ * 기본값을 쓰면 된다. 앱 버전이 올라가며 저장된 형태가 바뀌었을 때도 JSON.parse가
+ * 던질 수 있어 같은 처리로 흡수된다.
+ */
+export async function loadValue<T>(key: string): Promise<T | null> {
+  try {
+    const raw = await AsyncStorage.getItem(withPrefix(key));
+    return raw === null ? null : (JSON.parse(raw) as T);
+  } catch {
+    return null;
+  }
+}
+
+/** 값을 저장한다. 실패해도 조용히 넘어간다 — 다음 저장 때 다시 시도된다. */
+export async function saveValue<T>(key: string, value: T): Promise<void> {
+  try {
+    await AsyncStorage.setItem(withPrefix(key), JSON.stringify(value));
+  } catch {
+    // 저장 실패는 화면에 알릴 만한 일이 아니다. 메모리 상태는 이미 갱신돼 있다.
+  }
+}
+
+/** 저장 키 모음. 문자열을 여기저기 적으면 오타로 값이 사라지므로 한곳에 모은다. */
+export const StorageKeys = {
+  themePreference: 'theme-preference',
+  selectedRegions: 'selected-regions',
+  notifications: 'notifications',
+  tempUnit: 'temp-unit',
+} as const;

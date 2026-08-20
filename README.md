@@ -48,6 +48,7 @@
 - 관심 지역 선택 (최대 5개)
 - 알림 6종 개별 토글 — 날씨 요약, 강수 예보, 집중호우, 댐 저수율, 홍수·방류, 가뭄
 - 온도 단위(°C / °F), 테마(라이트 / 다크 / 자동)
+- 네 값 모두 기기에 저장돼 **앱을 껐다 켜도 유지**됩니다
 
 ---
 
@@ -88,6 +89,7 @@ Expo Go에 포함된 패키지만 사용하므로 **별도의 네이티브 빌�
 | TypeScript | strict |
 | react-native-svg | 원형 게이지, 그라디언트 |
 | @expo/vector-icons | 탭 바 아이콘 |
+| AsyncStorage | 설정값 저장 |
 
 ---
 
@@ -112,8 +114,18 @@ src/
 ├─ constants/
 │  └─ app-theme.ts         색상·여백·모서리 토큰 (네 화면 공용)
 │
+├─ theme/
+│  └─ theme-context.tsx    라이트/다크 팔레트 + 테마 설정 보관
+│
+├─ settings/
+│  └─ settings-context.tsx 지역·알림·온도 단위 보관
+│
+├─ hooks/
+│  └─ use-persisted-state.ts  useState + 기기 저장/복원
+│
 ├─ lib/
-│  └─ dam.ts               저수율 집계·필터 로직
+│  ├─ dam.ts               저수율 집계·필터 로직
+│  └─ storage.ts           AsyncStorage 래퍼 (JSON 변환·키 관리)
 │
 └─ data/                   샘플 데이터
    ├─ index.ts             재수출 — 사용하는 쪽은 '@/data'만 참조
@@ -130,12 +142,25 @@ src/
 화면에 보이는 수치는 대부분 하드코딩이 아니라 데이터에서 계산됩니다.
 예를 들어 수자원 탭의 `전국 평균 64.1%`, `양호 3개`, `주의 이상 2개`는 모두 `dams` 배열에서 나옵니다.
 
+### 설정 저장
+
+설정값은 화면이 아니라 Provider가 들고 있고(`theme/`, `settings/`), 저장은 `usePersistedState` 훅이 맡습니다.
+`useState`와 쓰는 법이 같아서 화면 코드는 저장을 신경 쓰지 않습니다.
+
+```tsx
+const [unit, setUnit, loaded] = usePersistedState(StorageKeys.tempUnit, 'c')
+```
+
+디스크 읽기는 비동기라, 다 읽어올 때까지 스플래시를 붙잡아 둡니다.
+그러지 않으면 다크 모드로 저장해 둔 사용자에게 라이트 모드 화면이 한 프레임 스칩니다.
+
+AsyncStorage 호출은 `lib/storage.ts` 한 곳에만 있으므로, 저장소를 바꿔도 나머지 코드는 그대로입니다.
+
 ---
 
 ## 남은 작업
 
+- [x] 다크 모드
+- [x] 설정값 영구 저장
 - [ ] 기상청 · K-water 실제 API 연동
-- [ ] 설정값 영구 저장 (현재는 앱을 끄면 초기화)
-- [ ] 다크 모드 실제 적용 (설정 UI는 있으나 화면에 반영되지 않음)
-- [ ] 지도 탭
 - [ ] iOS · 웹 실기기 확인

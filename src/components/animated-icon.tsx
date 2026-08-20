@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import * as SplashScreen from 'expo-splash-screen';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -8,9 +8,23 @@ import { scheduleOnRN } from 'react-native-worklets';
 const INITIAL_SCALE_FACTOR = Dimensions.get('screen').height / 90;
 const DURATION = 600;
 
-export function AnimatedSplashOverlay() {
+/**
+ * ready는 저장된 설정을 다 읽어왔는지다. false인 동안 스플래시를 계속 붙잡아,
+ * 다크 모드로 저장해 둔 사용자에게 라이트 모드 화면이 잠깐 스치지 않게 한다.
+ */
+export function AnimatedSplashOverlay({ ready = true }: { ready?: boolean }) {
   const [animate, setAnimate] = useState(false);
   const [visible, setVisible] = useState(true);
+  const [laidOut, setLaidOut] = useState(false);
+
+  useEffect(() => {
+    // 로고가 실제로 그려진 뒤에 네이티브 스플래시를 내려야 빈 화면이 스치지 않는다
+    if (!laidOut || !ready || animate) return;
+
+    SplashScreen.hideAsync().finally(() => {
+      setAnimate(true);
+    });
+  }, [laidOut, ready, animate]);
 
   if (!visible) return null;
 
@@ -47,13 +61,7 @@ export function AnimatedSplashOverlay() {
       {image}
     </Animated.View>
   ) : (
-    <View
-      onLayout={() => {
-        SplashScreen.hideAsync().finally(() => {
-          setAnimate(true);
-        });
-      }}
-      style={styles.splashOverlay}>
+    <View onLayout={() => setLaidOut(true)} style={styles.splashOverlay}>
       {image}
     </View>
   );

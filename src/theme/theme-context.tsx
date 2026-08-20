@@ -1,7 +1,9 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { StyleSheet, useColorScheme } from 'react-native';
 
 import { Palette, palettes } from '@/constants/app-theme';
+import { usePersistedState } from '@/hooks/use-persisted-state';
+import { StorageKeys } from '@/lib/storage';
 
 /** 사용자가 설정 화면에서 고르는 값. auto는 기기 설정을 따른다. */
 export type ThemePreference = 'light' | 'dark' | 'auto';
@@ -12,18 +14,23 @@ type ThemeValue = {
   scheme: 'light' | 'dark';
   preference: ThemePreference;
   setPreference: (next: ThemePreference) => void;
+  /** 저장된 설정을 아직 읽는 중이면 false. */
+  ready: boolean;
 };
 
 const ThemeContext = createContext<ThemeValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useColorScheme();
-  const [preference, setPreference] = useState<ThemePreference>('auto');
+  const [preference, setPreference, ready] = usePersistedState<ThemePreference>(
+    StorageKeys.themePreference,
+    'auto',
+  );
 
   const value = useMemo<ThemeValue>(() => {
     const scheme = preference === 'auto' ? (systemScheme === 'dark' ? 'dark' : 'light') : preference;
-    return { palette: palettes[scheme], scheme, preference, setPreference };
-  }, [preference, systemScheme]);
+    return { palette: palettes[scheme], scheme, preference, setPreference, ready };
+  }, [preference, systemScheme, setPreference, ready]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
@@ -41,8 +48,8 @@ export function useAppTheme() {
 
 /** 설정 화면처럼 테마를 바꿔야 할 때. */
 export function useThemeControl() {
-  const { preference, setPreference, scheme } = useThemeValue();
-  return { preference, setPreference, scheme };
+  const { preference, setPreference, scheme, ready } = useThemeValue();
+  return { preference, setPreference, scheme, ready };
 }
 
 /**
