@@ -64,7 +64,7 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
     const index = SIDO_LIST.findIndex((item) => item === activeRegion.sido);
     if (index <= 0) return;
 
-    sidoList.current?.scrollToOffset({ offset: index * SIDO_ROW_HEIGHT, animated: false });
+    sidoList.current?.scrollToIndex({ index, animated: false, viewPosition: 0.5 });
   };
 
   // 시트를 닫았다 열면 지금 보는 지역에서 다시 시작하는 편이 자연스럽다
@@ -155,7 +155,23 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
                 data={SIDO_LIST}
                 keyExtractor={(item) => item}
                 showsVerticalScrollIndicator={false}
+                /*
+                  16개뿐이라 나눠 그릴 이유가 없다. 다 그려야 내용 높이가 처음부터
+                  제대로 나오고, 그래야 아래쪽 시/도로 뛰어도 잘리지 않는다.
+                */
+                initialNumToRender={SIDO_LIST.length}
+                getItemLayout={(_, index) => ({
+                  length: SIDO_ROW_HEIGHT,
+                  offset: SIDO_ROW_HEIGHT * index,
+                  index,
+                })}
                 onContentSizeChange={() => {
+                  if (!pendingScroll.current) return;
+                  pendingScroll.current = false;
+                  scrollToActiveSido();
+                }}
+                onLayout={() => {
+                  // 내용 크기가 먼저 정해지고 높이가 나중에 잡히는 순서일 때를 위한 보험
                   if (!pendingScroll.current) return;
                   pendingScroll.current = false;
                   scrollToActiveSido();
