@@ -32,13 +32,6 @@ export interface NotificationOption {
 
 export const notificationOptions: NotificationOption[] = [
     {
-        id: 'daily-summary',
-        icon: '🌤️',
-        title: '오늘의 날씨 요약',
-        description: '매일 오전 7시 AI 요약 알림',
-        color: '#F59E0B', tint: '#FEF3C7', defaultOn: true,
-    },
-    {
         id: 'rain-forecast',
         icon: '🌧️',
         title: '강수 예보 알림',
