@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { ApiError, ApiFailureKind } from '@/api/http';
 import { CurrentWeather, Forecast, fetchCurrentWeather, fetchForecast } from '@/api/kma';
 import { Region } from '@/data';
-import { loadValue, saveValue, weatherCacheKey } from '@/lib/storage';
+import { dayExtremesKey, loadValue, saveValue, weatherCacheKey } from '@/lib/storage';
 import { useSettings } from '@/settings/settings-context';
 
 /** 화면이 보여줄 한 지역의 날씨 한 벌. */
@@ -19,6 +19,30 @@ interface CachedWeather {
 }
 
 /**
+ * 오늘 하루의 최고·최저기온.
+ *
+ * 예보에서 지나간 값이 빠져도 화면에 계속 보여주기 위해 따로 남긴다. date가 바뀌면
+ * 어제 값이므로 버린다.
+ */
+interface DayExtremes {
+  /** YYYYMMDD */
+  date: string;
+  high: number | null;
+  low: number | null;
+}
+
+/** 화면에 보여줄 오늘의 최고·최저. */
+export interface TodayTemperature {
+  high: number | null;
+  low: number | null;
+  /**
+   * 하루 전체가 아니라 남아 있는 시간대만으로 낸 값이면 true.
+   * 오늘 처음 켠 시각이 이미 저녁이라 지나간 값을 기억해 둘 기회가 없었을 때 그렇다.
+   */
+  partial: boolean;
+}
+
+/**
  * 어느 지역의 상태인지 함께 들고 다닌다.
  *
  * 지역이 바뀔 때 값을 지우는 대신 이렇게 두면, 지금 보는 지역과 코드가 다른 순간
@@ -31,6 +55,8 @@ interface RegionState {
   fetchedAt: number | null;
   loading: boolean;
   error: ApiFailureKind | null;
+  /** 지나간 값까지 합친 오늘의 최고·최저. */
+  today: TodayTemperature | null;
 }
 
 type WeatherValue = {
@@ -43,10 +69,56 @@ type WeatherValue = {
   error: ApiFailureKind | null;
   /** 보여줄 값이 아직 하나도 없는 상태. 이때만 스켈레톤을 그린다. */
   empty: boolean;
+  /** 오늘의 최고·최저기온. 예보에서 빠진 값은 기억해 둔 것으로 메운다. */
+  today: TodayTemperature | null;
   refresh: () => void;
 };
 
 const WeatherContext = createContext<WeatherValue | null>(null);
+
+/** 'YYYYMMDD'. 예보 응답의 fcstDate와 맞춰 비교하기 위한 형식이다. */
+function ymd(date: Date) {
+  const pad2 = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}`;
+}
+
+/**
+ * 예보에 남은 값과 기억해 둔 값을 합쳐 오늘의 최고·최저를 만든다.
+ *
+ * 우선순위는 이렇다.
+ *   1. 이번 응답의 TMX/TMN — 가장 정확하다
+ *   2. 지난번에 봐서 저장해 둔 값 — 이번 응답에서 빠진 것을 메운다
+ *   3. 시간별 기온의 최고·최저 — 둘 다 없을 때. 남은 시간대만의 값이라 근사치다
+ *
+ * 저장된 값이 이번 응답보다 더 극단적이면 그쪽을 쓴다. 아침에 본 최저기온이 저녁
+ * 예보의 최저보다 낮은 게 정상이고, 그게 하루 전체의 최저다.
+ */
+function mergeToday(
+  forecast: Forecast,
+  stored: DayExtremes | null,
+  now: Date,
+): TodayTemperature | null {
+  const todayKey = ymd(now);
+  const day = forecast.daily.find((entry) => entry.date === todayKey);
+  if (!day) return null;
+
+  const remembered = stored?.date === todayKey ? stored : null;
+
+  const pickHigh = (a: number | null, b: number | null) =>
+    a === null ? b : b === null ? a : Math.max(a, b);
+  const pickLow = (a: number | null, b: number | null) =>
+    a === null ? b : b === null ? a : Math.min(a, b);
+
+  const high = pickHigh(day.high, remembered?.high ?? null);
+  const low = pickLow(day.low, remembered?.low ?? null);
+
+  return {
+    high: high ?? day.hourlyHigh,
+    low: low ?? day.hourlyLow,
+    // 실제 TMX/TMN을 한 번도 못 받아 시간별 기온으로 때운 경우
+    partial: high === null || low === null,
+  };
+}
 
 /**
  * 보고 있는 지역의 날씨를 받아 온다.
@@ -73,8 +145,13 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
 
     const key = weatherCacheKey(region.code);
 
+    const extremesKey = dayExtremesKey(region.code);
+
     if (useCache) {
-      const cached = await loadValue<CachedWeather>(key);
+      const [cached, stored] = await Promise.all([
+        loadValue<CachedWeather>(key),
+        loadValue<DayExtremes>(extremesKey),
+      ]);
       // 기다리는 동안 지역이 또 바뀌었으면 이 결과는 버린다
       if (cached && requested.current === region.code) {
         setState({
@@ -83,6 +160,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
           fetchedAt: cached.fetchedAt,
           loading: true,
           error: null,
+          today: mergeToday(cached.data.forecast, stored, new Date(cached.fetchedAt)),
         });
       }
     }
@@ -100,14 +178,23 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
       const fresh: WeatherData = { current, forecast };
       const stamp = now.getTime();
 
+      const stored = await loadValue<DayExtremes>(extremesKey);
+      const today = mergeToday(forecast, stored, now);
+
       setState({
         regionCode: region.code,
         data: fresh,
         fetchedAt: stamp,
         loading: false,
         error: null,
+        today,
       });
+
       saveValue<CachedWeather>(key, { data: fresh, fetchedAt: stamp });
+      // 근사치는 저장하지 않는다. 저장해 두면 다음에도 그 값이 하루 전체 값처럼 쓰인다.
+      if (today && !today.partial) {
+        saveValue<DayExtremes>(extremesKey, { date: ymd(now), high: today.high, low: today.low });
+      }
     } catch (caught) {
       if (requested.current !== region.code) return;
 
@@ -116,7 +203,14 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
       setState((prev) =>
         prev && prev.regionCode === region.code
           ? { ...prev, loading: false, error: kind }
-          : { regionCode: region.code, data: null, fetchedAt: null, loading: false, error: kind },
+          : {
+              regionCode: region.code,
+              data: null,
+              fetchedAt: null,
+              loading: false,
+              error: kind,
+              today: null,
+            },
       );
     }
   }, []);
@@ -148,6 +242,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
       loading: matched ? matched.loading : true,
       error: matched?.error ?? null,
       empty: !matched?.data,
+      today: matched?.today ?? null,
       refresh,
     };
   }, [state, activeRegion.code, refresh]);

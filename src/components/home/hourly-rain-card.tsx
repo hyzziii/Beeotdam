@@ -1,24 +1,37 @@
 import { ScrollView, Text, View } from 'react-native';
 import { createStyles, useAppTheme } from '@/theme/theme-context';
 
+import { HourlyRain } from '@/api/kma';
+import { Skeleton } from '@/components/common/skeleton';
 import { AppRadius, AppSpacing, RAIN_HIGHLIGHT } from '@/constants/app-theme';
-import { hourlyRain } from '@/data';
 
 const BAR_MAX_HEIGHT = 64;
 const BAR_MIN_HEIGHT = 6;
 
-const maxAmount = Math.max(...hourlyRain.map((item) => item.amount));
+/** 막대 높이를 나눌 기준. 강수량이 전부 0인 날 0으로 나누지 않도록 최소 1로 둔다. */
+function scaleBase(hourly: HourlyRain[]) {
+  return Math.max(1, ...hourly.map((item) => item.amount));
+}
 
-export function HourlyRainCard() {
+export function HourlyRainCard({
+  hourly,
+  date,
+}: {
+  hourly: HourlyRain[] | null;
+  /** hourly가 어느 날짜인지(YYYYMMDD). 부제목을 오늘/내일로 맞추는 데 쓴다. */
+  date: string | null;
+}) {
   const styles = useStyles();
   const theme = useAppTheme();
+
+  const maxAmount = hourly ? scaleBase(hourly) : 1;
 
   return (
     <View style={styles.card}>
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>시간대별 강수</Text>
-          <Text style={styles.subtitle}>오늘 오전 6시 ~ 오후 8시</Text>
+          <Text style={styles.subtitle}>{describeDay(date)} 오전 6시 ~ 오후 8시</Text>
         </View>
 
         <View style={styles.legend}>
@@ -31,7 +44,19 @@ export function HourlyRainCard() {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.chart}>
-        {hourlyRain.map((item) => {
+        {hourly === null &&
+          // 값이 들어올 자리를 미리 잡아 둔다. 안 그러면 카드가 납작하다 갑자기 커진다.
+          Array.from({ length: 8 }, (_, index) => (
+            <View key={index} style={styles.column}>
+              <Skeleton width={28} height={12} />
+              <View style={styles.barSlot}>
+                <Skeleton width={16} height={20 + ((index * 7) % 32)} radius={4} />
+              </View>
+              <Skeleton width={26} height={11} />
+            </View>
+          ))}
+
+        {(hourly ?? []).map((item) => {
           const active = item.prob >= RAIN_HIGHLIGHT;
           const height =
             BAR_MIN_HEIGHT + (item.amount / maxAmount) * (BAR_MAX_HEIGHT - BAR_MIN_HEIGHT);
@@ -62,6 +87,27 @@ export function HourlyRainCard() {
       </ScrollView>
     </View>
   );
+}
+
+/**
+ * 부제목의 날짜. 발표가 늦은 시각이면 오늘 06시가 이미 지나 다음 날 예보를 보여주므로
+ * '오늘'로 고정하면 틀린 말이 된다.
+ */
+function describeDay(date: string | null) {
+  if (date === null) return '오늘';
+
+  const now = new Date();
+  const pad2 = (value: number) => String(value).padStart(2, '0');
+  const key = (target: Date) =>
+    `${target.getFullYear()}${pad2(target.getMonth() + 1)}${pad2(target.getDate())}`;
+
+  if (date === key(now)) return '오늘';
+
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (date === key(tomorrow)) return '내일';
+
+  return `${Number(date.slice(4, 6))}월 ${Number(date.slice(6, 8))}일`;
 }
 
 function LegendItem({ color, label }: { color: string; label: string }) {

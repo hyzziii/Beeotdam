@@ -57,3 +57,14 @@ export const StorageKeys = {
 export function weatherCacheKey(regionCode: string) {
   return `weather:${regionCode}`;
 }
+
+/**
+ * 지역별 '오늘의 최고·최저기온' 키.
+ *
+ * 기상청은 지나간 시각을 예보에서 빼므로, 저녁에 조회하면 오늘 최저기온(새벽 6시 값)이
+ * 사라진다. 날씨 앱들이 오늘 최고·최저를 하루 종일 보여줄 수 있는 건 지나간 값을 들고
+ * 있기 때문이다. 우리도 한 번 본 값을 그날이 끝날 때까지 남겨 둔다.
+ */
+export function dayExtremesKey(regionCode: string) {
+  return `day-extremes:${regionCode}`;
+}

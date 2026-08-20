@@ -13,17 +13,17 @@ import { Skeleton } from '@/components/common/skeleton';
 import { AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useSettings } from '@/settings/settings-context';
 import { failureMessage } from '@/weather/failure-message';
-import { useWeather } from '@/weather/weather-context';
+import { TodayTemperature, useWeather } from '@/weather/weather-context';
 
 export default function HomeScreen() {
   const styles = useStyles();
 
   const { activeRegion } = useSettings();
-  const { data, fetchedAt, loading, error, empty } = useWeather();
+  const { data, fetchedAt, loading, error, empty, today } = useWeather();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const current = data?.current;
-  const today = data?.forecast.daily[0];
+  const todayForecast = data?.forecast.daily[0];
   const hourly = data?.forecast.hourly;
   // 오늘 남은 시간 중 가장 높은 강수확률. 카드의 '강수확률'이 이 값이다.
   const peakProb = hourly?.length ? Math.max(...hourly.map((entry) => entry.prob)) : null;
@@ -68,15 +68,13 @@ export default function HomeScreen() {
               ) : (
                 <>
                   <Text style={styles.temperature}>{formatTemp(current?.temperature)}</Text>
-                  <Text style={styles.weatherDescription}>{today?.desc ?? '—'}</Text>
-                  <Text style={styles.temperatureInfo}>
-                    최고 {formatTemp(today?.high)} · 최저 {formatTemp(today?.low)}
-                  </Text>
+                  <Text style={styles.weatherDescription}>{todayForecast?.desc ?? '—'}</Text>
+                  <Text style={styles.temperatureInfo}>{describeRange(today)}</Text>
                 </>
               )}
             </View>
 
-            <Text style={styles.weatherIcon}>{empty ? '　' : (today?.icon ?? '⛅')}</Text>
+            <Text style={styles.weatherIcon}>{empty ? '　' : (todayForecast?.icon ?? '⛅')}</Text>
           </View>
 
           <View style={styles.weatherStats}>
@@ -112,7 +110,10 @@ export default function HomeScreen() {
           </View>
         )}
 
-        <HourlyRainCard />
+        <HourlyRainCard
+          hourly={data?.forecast.hourly ?? null}
+          date={data?.forecast.hourlyDate ?? null}
+        />
         <DamLevelList />
         <WeeklyWeatherList />
       </ScrollView>
@@ -153,6 +154,23 @@ function WeatherStat({
 /** 기온을 '23°'로. 값이 없으면 자리만 남긴다. */
 function formatTemp(value: number | null | undefined) {
   return value === null || value === undefined ? '—' : `${Math.round(value)}°`;
+}
+
+/**
+ * '최고 31° · 최저 24°' 줄.
+ *
+ * 값이 없는 쪽은 아예 빼서 빈 대시가 남지 않게 한다. 남은 시간대만으로 낸 근사치일
+ * 때는 그렇다고 밝힌다. 저녁에 처음 켠 날은 새벽 추위가 빠져 최저가 실제보다 높다.
+ */
+function describeRange(today: TodayTemperature | null) {
+  if (!today) return '';
+
+  const parts: string[] = [];
+  if (today.high !== null) parts.push(`최고 ${formatTemp(today.high)}`);
+  if (today.low !== null) parts.push(`최저 ${formatTemp(today.low)}`);
+  if (parts.length === 0) return '';
+
+  return today.partial ? `${parts.join(' · ')} (남은 시간 기준)` : parts.join(' · ');
 }
 
 /**

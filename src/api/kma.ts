@@ -143,8 +143,18 @@ export interface DailyForecast {
   day: string;
   short: string;
   icon: string;
+  /** 일최고기온(TMX). 오늘은 오후 3시가 지나면 예보에서 빠져 null이 된다. */
   high: number | null;
+  /** 일최저기온(TMN). 오늘은 새벽 6시가 지나면 예보에서 빠져 null이 된다. */
   low: number | null;
+  /**
+   * 응답에 실린 시간별 기온(TMP)의 최고·최저.
+   *
+   * TMX/TMN이 빠졌을 때 대신 쓸 수 있다. 다만 남아 있는 시간대만의 값이라 하루 전체의
+   * 최고·최저와는 다르다. 저녁에 보면 새벽 추위가 빠져 최저가 실제보다 높게 나온다.
+   */
+  hourlyHigh: number | null;
+  hourlyLow: number | null;
   rain: number;
   desc: string;
 }
@@ -152,6 +162,13 @@ export interface DailyForecast {
 /** 단기예보 원본을 한 번만 받아 여러 화면이 나눠 쓴다. */
 export interface Forecast {
   hourly: HourlyRain[];
+  /**
+   * hourly가 어느 날짜인지(YYYYMMDD).
+   *
+   * 오늘 06시가 지나면 오늘 칸이 부족해 다음 날을 고르므로, 화면이 '오늘'이라고
+   * 단정하면 틀린다.
+   */
+  hourlyDate: string | null;
   daily: DailyForecast[];
   base: BaseTime;
 }
@@ -192,8 +209,11 @@ export async function fetchForecast(grid: GridPoint, now: Date): Promise<Forecas
     ny: grid.ny,
   });
 
+  const hourly = toHourlyRain(items);
+
   return {
-    hourly: toHourlyRain(items),
+    hourly: hourly.entries,
+    hourlyDate: hourly.date,
     daily: toDailyForecast(items, now),
     base,
   };
@@ -210,7 +230,7 @@ const HOURLY_END = 20;
  * 발표가 늦은 시각이면 오늘 06시 예보는 이미 지나가 응답에 없다. 그럴 때 앞을 비워 두면
  * 차트가 어긋나므로, 15칸이 온전히 남아 있는 날을 골라 쓴다.
  */
-export function toHourlyRain(items: FcstItem[]): HourlyRain[] {
+export function toHourlyRain(items: FcstItem[]): { date: string | null; entries: HourlyRain[] } {
   const grouped = groupByDateTime(items);
   const rows: { date: string; hour: number; prob: number; amount: number }[] = [];
 
@@ -226,20 +246,23 @@ export function toHourlyRain(items: FcstItem[]): HourlyRain[] {
     });
   }
 
-  if (rows.length === 0) return [];
+  if (rows.length === 0) return { date: null, entries: [] };
 
   const expected = HOURLY_END - HOURLY_START + 1;
   const dates = [...new Set(rows.map((row) => row.date))];
   const target =
     dates.find((date) => rows.filter((row) => row.date === date).length === expected) ?? dates[0];
 
-  return rows
-    .filter((row) => row.date === target)
-    .map(({ hour, prob, amount }) => ({
-      hour: `${String(hour).padStart(2, '0')}시`,
-      prob,
-      amount,
-    }));
+  return {
+    date: target,
+    entries: rows
+      .filter((row) => row.date === target)
+      .map(({ hour, prob, amount }) => ({
+        hour: `${String(hour).padStart(2, '0')}시`,
+        prob,
+        amount,
+      })),
+  };
 }
 
 const WEEKDAY_SHORT = ['일', '월', '화', '수', '목', '금', '토'];
@@ -270,7 +293,15 @@ export function toDailyForecast(items: FcstItem[], now: Date): DailyForecast[] {
 
   const byDate = new Map<
     string,
-    { high: number | null; low: number | null; rain: number; sky: number; pty: number }
+    {
+      high: number | null;
+      low: number | null;
+      hourlyHigh: number | null;
+      hourlyLow: number | null;
+      rain: number;
+      sky: number;
+      pty: number;
+    }
   >();
 
   for (const [key, values] of grouped) {
@@ -279,7 +310,7 @@ export function toDailyForecast(items: FcstItem[], now: Date): DailyForecast[] {
 
     let day = byDate.get(date);
     if (!day) {
-      day = { high: null, low: null, rain: 0, sky: 1, pty: 0 };
+      day = { high: null, low: null, hourlyHigh: null, hourlyLow: null, rain: 0, sky: 1, pty: 0 };
       byDate.set(date, day);
     }
 
@@ -287,6 +318,13 @@ export function toDailyForecast(items: FcstItem[], now: Date): DailyForecast[] {
     day.high = parseNumber(values.get('TMX')) ?? day.high;
     day.low = parseNumber(values.get('TMN')) ?? day.low;
     day.rain = Math.max(day.rain, parseNumber(values.get('POP')) ?? 0);
+
+    // 시간별 기온은 매 시각 실려 오므로 대체값을 만들 수 있다
+    const temp = parseNumber(values.get('TMP'));
+    if (temp !== null) {
+      day.hourlyHigh = day.hourlyHigh === null ? temp : Math.max(day.hourlyHigh, temp);
+      day.hourlyLow = day.hourlyLow === null ? temp : Math.min(day.hourlyLow, temp);
+    }
 
     // 아이콘은 낮의 대표 시각(정오~오후 3시)을 기준으로 삼는다
     if (hour >= 12 && hour <= 15) {
@@ -312,6 +350,8 @@ export function toDailyForecast(items: FcstItem[], now: Date): DailyForecast[] {
         icon,
         high: day.high,
         low: day.low,
+        hourlyHigh: day.hourlyHigh,
+        hourlyLow: day.hourlyLow,
         rain: day.rain,
         desc,
       };
