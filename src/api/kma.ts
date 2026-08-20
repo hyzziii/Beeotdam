@@ -1,0 +1,343 @@
+/**
+ * 기상청 단기예보 조회서비스를 앱이 쓰는 모양으로 옮긴다.
+ *
+ * 이 API의 응답은 화면과 형태가 전혀 다르다. 한 시각의 정보가 한 덩어리로 오지 않고
+ * 항목마다 한 줄씩 흩어져 온다.
+ *
+ *   { category: 'POP', fcstTime: '1400', fcstValue: '85' }    강수확률
+ *   { category: 'PCP', fcstTime: '1400', fcstValue: '7.5mm' } 강수량
+ *   { category: 'TMP', fcstTime: '1400', fcstValue: '23' }    기온
+ *
+ * 그래서 시각별로 다시 묶는 작업이 이 파일의 대부분이다.
+ */
+
+import { GridPoint } from './grid';
+import { fetchPublicData } from './http';
+import { BaseTime, ultraSrtNcstBase, vilageFcstBase } from './kma-time';
+
+const BASE_URL = 'https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
+
+/** 단기예보는 3일치를 12개 항목으로 주므로 줄 수가 많다. 한 번에 다 받는다. */
+const VILAGE_FCST_ROWS = 1000;
+const ULTRA_SRT_NCST_ROWS = 60;
+
+/** 예보 응답 한 줄. */
+interface FcstItem {
+  category: string;
+  fcstDate: string;
+  fcstTime: string;
+  fcstValue: string;
+}
+
+/** 실황 응답 한 줄. 예보와 달리 fcst가 아니라 obsr이다. */
+interface NcstItem {
+  category: string;
+  baseDate: string;
+  baseTime: string;
+  obsrValue: string;
+}
+
+// ---------------------------------------------------------------- 값 해석
+
+/**
+ * 강수량·적설은 숫자가 아니라 사람이 읽는 문자열로 온다.
+ * '강수없음', '1.0mm', '30.0~50.0mm', '1mm 미만'이 섞여 있어 앞의 숫자만 뽑는다.
+ */
+function parseAmount(raw: string | undefined): number {
+  if (!raw) return 0;
+  const matched = raw.match(/\d+(\.\d+)?/);
+  return matched ? Number(matched[0]) : 0;
+}
+
+function parseNumber(raw: string | undefined): number | null {
+  if (raw === undefined) return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
+}
+
+/**
+ * 하늘상태(SKY)와 강수형태(PTY)를 아이콘·설명으로 옮긴다.
+ *
+ *   SKY: 맑음 1, 구름많음 3, 흐림 4
+ *   PTY: 없음 0, 비 1, 비/눈 2, 눈 3, 소나기 4
+ */
+function describeWeather(sky: number, pty: number): { icon: string; desc: string } {
+  // 비나 눈이 오면 하늘상태보다 강수형태가 우선이다
+  switch (pty) {
+    case 1:
+      return { icon: '🌧', desc: '비' };
+    case 2:
+      return { icon: '🌨', desc: '비/눈' };
+    case 3:
+      return { icon: '❄️', desc: '눈' };
+    case 4:
+      return { icon: '🌦', desc: '소나기' };
+  }
+
+  switch (sky) {
+    case 1:
+      return { icon: '☀️', desc: '맑음' };
+    case 3:
+      return { icon: '⛅', desc: '구름 많음' };
+    case 4:
+      return { icon: '☁️', desc: '흐림' };
+    default:
+      return { icon: '⛅', desc: '구름 조금' };
+  }
+}
+
+/**
+ * 흩어진 줄들을 날짜+시각으로 묶는다.
+ * Map은 삽입 순서를 유지하므로, 응답이 시간순인 이상 결과도 시간순이다.
+ */
+function groupByDateTime(items: FcstItem[]) {
+  const grouped = new Map<string, Map<string, string>>();
+
+  for (const item of items) {
+    const key = `${item.fcstDate}${item.fcstTime}`;
+    let slot = grouped.get(key);
+    if (!slot) {
+      slot = new Map();
+      grouped.set(key, slot);
+    }
+    slot.set(item.category, item.fcstValue);
+  }
+
+  return grouped;
+}
+
+// ---------------------------------------------------------------- 공개 타입
+
+/** 홈 상단의 현재 날씨. 관측값이라 예보와 섞이지 않게 따로 둔다. */
+export interface CurrentWeather {
+  /** 기온(°C) */
+  temperature: number | null;
+  /** 습도(%) */
+  humidity: number | null;
+  /** 1시간 강수량(mm) */
+  rainfall: number;
+  /** 풍속(m/s) */
+  windSpeed: number | null;
+  /** 관측 시각 'HH:MM' */
+  observedAt: string;
+}
+
+/** 시간대별 강수. src/data/weather.ts의 hourlyRain과 같은 모양이다. */
+export interface HourlyRain {
+  hour: string;
+  prob: number;
+  amount: number;
+}
+
+/** 일별 예보. src/data/weather.ts의 weeklyWeather와 같은 모양이다. */
+export interface DailyForecast {
+  /** YYYYMMDD */
+  date: string;
+  day: string;
+  short: string;
+  icon: string;
+  high: number | null;
+  low: number | null;
+  rain: number;
+  desc: string;
+}
+
+/** 단기예보 원본을 한 번만 받아 여러 화면이 나눠 쓴다. */
+export interface Forecast {
+  hourly: HourlyRain[];
+  daily: DailyForecast[];
+  base: BaseTime;
+}
+
+// ---------------------------------------------------------------- 호출
+
+export async function fetchCurrentWeather(grid: GridPoint, now: Date): Promise<CurrentWeather> {
+  const base = ultraSrtNcstBase(now);
+  const items = await fetchPublicData<NcstItem>(`${BASE_URL}/getUltraSrtNcst`, {
+    numOfRows: ULTRA_SRT_NCST_ROWS,
+    pageNo: 1,
+    base_date: base.baseDate,
+    base_time: base.baseTime,
+    nx: grid.nx,
+    ny: grid.ny,
+  });
+
+  const values = new Map(items.map((item) => [item.category, item.obsrValue]));
+
+  return {
+    temperature: parseNumber(values.get('T1H')),
+    humidity: parseNumber(values.get('REH')),
+    // 실황의 RN1은 숫자로 오지만, 형식이 흔들려도 견디게 같은 해석기를 쓴다
+    rainfall: parseAmount(values.get('RN1')),
+    windSpeed: parseNumber(values.get('WSD')),
+    observedAt: `${base.baseTime.slice(0, 2)}:${base.baseTime.slice(2)}`,
+  };
+}
+
+export async function fetchForecast(grid: GridPoint, now: Date): Promise<Forecast> {
+  const base = vilageFcstBase(now);
+  const items = await fetchPublicData<FcstItem>(`${BASE_URL}/getVilageFcst`, {
+    numOfRows: VILAGE_FCST_ROWS,
+    pageNo: 1,
+    base_date: base.baseDate,
+    base_time: base.baseTime,
+    nx: grid.nx,
+    ny: grid.ny,
+  });
+
+  return {
+    hourly: toHourlyRain(items),
+    daily: toDailyForecast(items, now),
+    base,
+  };
+}
+
+// ---------------------------------------------------------------- 변환
+
+const HOURLY_START = 6;
+const HOURLY_END = 20;
+
+/**
+ * 시간대별 강수 차트용. 화면이 06시~20시만 보여주므로 그 구간만 남긴다.
+ *
+ * 발표가 늦은 시각이면 오늘 06시 예보는 이미 지나가 응답에 없다. 그럴 때 앞을 비워 두면
+ * 차트가 어긋나므로, 15칸이 온전히 남아 있는 날을 골라 쓴다.
+ */
+export function toHourlyRain(items: FcstItem[]): HourlyRain[] {
+  const grouped = groupByDateTime(items);
+  const rows: { date: string; hour: number; prob: number; amount: number }[] = [];
+
+  for (const [key, values] of grouped) {
+    const hour = Number(key.slice(8, 10));
+    if (hour < HOURLY_START || hour > HOURLY_END) continue;
+
+    rows.push({
+      date: key.slice(0, 8),
+      hour,
+      prob: parseNumber(values.get('POP')) ?? 0,
+      amount: parseAmount(values.get('PCP')),
+    });
+  }
+
+  if (rows.length === 0) return [];
+
+  const expected = HOURLY_END - HOURLY_START + 1;
+  const dates = [...new Set(rows.map((row) => row.date))];
+  const target =
+    dates.find((date) => rows.filter((row) => row.date === date).length === expected) ?? dates[0];
+
+  return rows
+    .filter((row) => row.date === target)
+    .map(({ hour, prob, amount }) => ({
+      hour: `${String(hour).padStart(2, '0')}시`,
+      prob,
+      amount,
+    }));
+}
+
+const WEEKDAY_SHORT = ['일', '월', '화', '수', '목', '금', '토'];
+
+/** 'YYYYMMDD' → Date. 문자열을 Date에 그대로 넣으면 시간대가 흔들려 직접 자른다. */
+function parseYmd(ymd: string) {
+  return new Date(Number(ymd.slice(0, 4)), Number(ymd.slice(4, 6)) - 1, Number(ymd.slice(6, 8)));
+}
+
+function dayLabel(offset: number, date: Date) {
+  if (offset === 0) return '오늘';
+  if (offset === 1) return '내일';
+  if (offset === 2) return '모레';
+  return `${WEEKDAY_SHORT[date.getDay()]}요일`;
+}
+
+/**
+ * 주간 목록용. 단기예보는 3일치까지만 주므로 결과도 최대 3개다.
+ * 4일차 이후는 중기예보 API가 따로 필요하다.
+ */
+export function toDailyForecast(items: FcstItem[], now: Date): DailyForecast[] {
+  const grouped = groupByDateTime(items);
+
+  const byDate = new Map<
+    string,
+    { high: number | null; low: number | null; rain: number; sky: number; pty: number }
+  >();
+
+  for (const [key, values] of grouped) {
+    const date = key.slice(0, 8);
+    const hour = Number(key.slice(8, 10));
+
+    let day = byDate.get(date);
+    if (!day) {
+      day = { high: null, low: null, rain: 0, sky: 1, pty: 0 };
+      byDate.set(date, day);
+    }
+
+    // TMX/TMN은 하루에 한 번만 실려 온다
+    day.high = parseNumber(values.get('TMX')) ?? day.high;
+    day.low = parseNumber(values.get('TMN')) ?? day.low;
+    day.rain = Math.max(day.rain, parseNumber(values.get('POP')) ?? 0);
+
+    // 아이콘은 낮의 대표 시각(정오~오후 3시)을 기준으로 삼는다
+    if (hour >= 12 && hour <= 15) {
+      day.sky = parseNumber(values.get('SKY')) ?? day.sky;
+      day.pty = parseNumber(values.get('PTY')) ?? day.pty;
+    }
+  }
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  return [...byDate.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, day]) => {
+      const parsed = parseYmd(date);
+      const offset = Math.round((parsed.getTime() - today) / dayMs);
+      const { icon, desc } = describeWeather(day.sky, day.pty);
+
+      return {
+        date,
+        day: dayLabel(offset, parsed),
+        short: WEEKDAY_SHORT[parsed.getDay()],
+        icon,
+        high: day.high,
+        low: day.low,
+        rain: day.rain,
+        desc,
+      };
+    });
+}
+
+// ---------------------------------------------------------------- 우산 알림
+
+export interface UmbrellaAdvice {
+  /** 비가 시작되는 시각 라벨 */
+  from: string;
+  /** 비가 끝나는 시각 라벨 */
+  to: string;
+  /** 강수확률이 가장 높은 시각 */
+  peakHour: string;
+  /** 그때의 강수확률(%) */
+  peakProb: number;
+}
+
+/** 이 확률 이상을 '비가 온다'로 본다. 차트에서 파란색으로 강조하는 기준과 같다. */
+export const RAIN_THRESHOLD = 60;
+
+/**
+ * 홈의 우산 알림 문구에 쓸 값. 기준을 넘는 구간이 없으면 null이라 카드를 숨기면 된다.
+ *
+ * 비가 오다 말다 할 수 있는데 문구는 '몇 시~몇 시' 하나만 담으므로, 처음 넘는 시각과
+ * 마지막으로 넘는 시각을 양 끝으로 쓴다.
+ */
+export function umbrellaAdvice(hourly: HourlyRain[]): UmbrellaAdvice | null {
+  const rainy = hourly.filter((entry) => entry.prob >= RAIN_THRESHOLD);
+  if (rainy.length === 0) return null;
+
+  const peak = rainy.reduce((best, entry) => (entry.prob > best.prob ? entry : best));
+
+  return {
+    from: rainy[0].hour,
+    to: rainy[rainy.length - 1].hour,
+    peakHour: peak.hour,
+    peakProb: peak.prob,
+  };
+}

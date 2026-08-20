@@ -2,14 +2,17 @@ export interface Region {
     id: string
     district: string
     city: string
+    /** 구청 위치 기준. 기상청 격자로 변환해 예보를 조회한다. */
+    lat: number
+    lng: number
 }
 
 export const regions: Region[] = [
-    { id: 'gangnam',  district: '강남구',   city: '서울' },
-    { id: 'haeundae', district: '해운대구', city: '부산' },
-    { id: 'suseong',  district: '수성구',   city: '대구' },
-    { id: 'yuseong',  district: '유성구',   city: '대전' },
-    { id: 'yeonsu',   district: '연수구',   city: '인천' },
+    { id: 'gangnam',  district: '강남구',   city: '서울', lat: 37.5173, lng: 127.0473 },
+    { id: 'haeundae', district: '해운대구', city: '부산', lat: 35.1631, lng: 129.1636 },
+    { id: 'suseong',  district: '수성구',   city: '대구', lat: 35.8582, lng: 128.6312 },
+    { id: 'yuseong',  district: '유성구',   city: '대전', lat: 36.3623, lng: 127.3562 },
+    { id: 'yeonsu',   district: '연수구',   city: '인천', lat: 37.4106, lng: 126.6784 },
 ]
 
 /** 관심 지역으로 담을 수 있는 최대 개수. */
