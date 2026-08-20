@@ -3,7 +3,7 @@ import { FlatList, Modal, Pressable, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppRadius, AppSpacing } from '@/constants/app-theme';
-import { Region, SIDO_LIST, regions } from '@/data';
+import { Region, SIDO_LIST, regionLabel, regions } from '@/data';
 import { useSettings } from '@/settings/settings-context';
 import { createStyles, useAppTheme } from '@/theme/theme-context';
 
@@ -67,9 +67,7 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
           <View style={styles.header}>
             <View style={styles.headerText}>
               <Text style={styles.title}>지역 선택</Text>
-              <Text style={styles.subtitle}>
-                현재: {activeRegion.sido} {activeRegion.district}
-              </Text>
+              <Text style={styles.subtitle}>현재: {regionLabel(activeRegion)}</Text>
             </View>
 
             <Pressable
@@ -106,7 +104,7 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
                     accessibilityRole="button"
                     accessibilityLabel={`${region.sido} ${region.district} 보기`}
                     style={({ pressed }) => [styles.chip, pressed && styles.pressed]}>
-                    <Text style={styles.chipText}>{region.district}</Text>
+                    <Text style={styles.chipText}>{regionLabel(region)}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -156,7 +154,6 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
                 renderItem={({ item }) => (
                   <DistrictRow
                     region={item}
-                    showSido={!!keyword}
                     viewing={item.code === activeRegion.code}
                     onPick={() => handlePick(item)}
                   />
@@ -173,12 +170,10 @@ export function RegionPicker({ visible, onClose }: { visible: boolean; onClose: 
 
 function DistrictRow({
   region,
-  showSido,
   viewing,
   onPick,
 }: {
   region: Region;
-  showSido: boolean;
   viewing: boolean;
   onPick: () => void;
 }) {
@@ -190,12 +185,10 @@ function DistrictRow({
       accessibilityRole="button"
       accessibilityLabel={`${region.sido} ${region.district} 보기`}
       style={({ pressed }) => [styles.districtRow, pressed && styles.pressed]}>
-      <View style={styles.districtText}>
-        <Text style={[styles.districtName, viewing && styles.districtNameCurrent]}>
-          {region.district}
-        </Text>
-        {showSido && <Text style={styles.districtSido}>{region.sido}</Text>}
-      </View>
+      <Text style={[styles.districtName, viewing && styles.districtNameCurrent]}>
+        <Text style={styles.districtSido}>{region.sido} </Text>
+        {region.district}
+      </Text>
 
       <View style={[styles.check, viewing && styles.checkOn]}>
         {viewing && <Text style={styles.checkGlyph}>✓</Text>}
@@ -331,10 +324,8 @@ const useStyles = createStyles((c) => ({
     paddingHorizontal: 8,
     borderRadius: 10,
   },
-  districtText: {
-    flex: 1,
-  },
   districtName: {
+    flex: 1,
     fontSize: 14,
     fontWeight: '600',
     color: c.body,
@@ -344,8 +335,8 @@ const useStyles = createStyles((c) => ({
     color: c.accentText,
   },
   districtSido: {
-    marginTop: 2,
-    fontSize: 10,
+    // 시/도는 어느 지역인지 알려주는 보조 정보라 구 이름보다 흐리게 둔다
+    fontWeight: '600',
     color: c.muted,
   },
   recent: {

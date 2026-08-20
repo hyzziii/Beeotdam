@@ -324,3 +324,13 @@ export const DEFAULT_REGION_CODE = '11230'
 export function findRegion(code: string) {
     return regions.find((region) => region.code === code)
 }
+
+/**
+ * 화면에 쓰는 이름. '서울 강남구'처럼 시/도를 앞에 붙인다.
+ *
+ * 구 이름만으로는 어디인지 알 수 없다. 남구·중구·동구·서구·북구는 여러 시/도에 같은
+ * 이름으로 있어서, 시/도를 떼면 부산 남구인지 대구 남구인지 구별되지 않는다.
+ */
+export function regionLabel(region: Region) {
+    return `${region.sido} ${region.district}`
+}
