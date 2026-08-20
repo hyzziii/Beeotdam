@@ -2,7 +2,6 @@ import { ScrollView, Text, View } from 'react-native';
 import { createStyles } from '@/theme/theme-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AiSummaryCard } from '@/components/home/ai-summary-card';
 import { DamLevelList } from '@/components/home/dam-level-list';
 import { HourlyRainCard } from '@/components/home/hourly-rain-card';
 import { WeeklyWeatherList } from '@/components/home/weekly-weather-list';
@@ -54,7 +53,6 @@ export default function HomeScreen() {
         </View>
 
         <HourlyRainCard />
-        <AiSummaryCard />
         <DamLevelList />
         <WeeklyWeatherList />
       </ScrollView>
