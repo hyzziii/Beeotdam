@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ApiError, ApiFailureKind } from '@/api/http';
-import { CurrentWeather, Forecast, fetchCurrentWeather, fetchForecast } from '@/api/kma';
+import { CurrentWeather, Forecast, HourlyRain, fetchCurrentWeather, fetchForecast } from '@/api/kma';
 import { Region } from '@/data';
 import { dayExtremesKey, loadValue, saveValue, weatherCacheKey } from '@/lib/storage';
 import { useSettings } from '@/settings/settings-context';
@@ -29,6 +29,20 @@ interface DayExtremes {
   date: string;
   high: number | null;
   low: number | null;
+  /**
+   * 오늘 06~20시 중 지금까지 본 시간별 값.
+   *
+   * 기상청이 지나간 시각을 빼기 때문에, 차트에 오늘 하루를 그리려면 예전에 받은 것을
+   * 들고 있어야 한다. 그날 처음 켠 시각 이전은 채울 방법이 없어 비어 있다.
+   */
+  hourly?: HourlyRain[];
+}
+
+/** 오늘 하루의 시간별 값과 지금까지의 강수량. */
+export interface TodayHourly {
+  entries: HourlyRain[];
+  /** 지금 시각까지의 강수량 합계(mm). 예보값을 더한 것이라 실측은 아니다. */
+  rainSoFar: number;
 }
 
 /** 화면에 보여줄 오늘의 최고·최저. */
@@ -57,6 +71,8 @@ interface RegionState {
   error: ApiFailureKind | null;
   /** 지나간 값까지 합친 오늘의 최고·최저. */
   today: TodayTemperature | null;
+  /** 지나간 시각까지 합친 오늘의 시간별 값. */
+  todayHourly: TodayHourly | null;
 }
 
 type WeatherValue = {
@@ -71,6 +87,8 @@ type WeatherValue = {
   empty: boolean;
   /** 오늘의 최고·최저기온. 예보에서 빠진 값은 기억해 둔 것으로 메운다. */
   today: TodayTemperature | null;
+  /** 오늘 06~20시. 지나간 시각은 기억해 둔 값으로 메운다. */
+  todayHourly: TodayHourly | null;
   refresh: () => void;
 };
 
@@ -121,6 +139,37 @@ function mergeToday(
 }
 
 /**
+ * 예보에 남은 시간과 기억해 둔 시간을 합쳐 오늘 06~20시를 만든다.
+ *
+ * 같은 시각이 양쪽에 있으면 이번 응답을 쓴다. 예보는 계속 갱신되므로 새 값이 맞다.
+ * 그날 처음 켠 시각 이전은 어디에도 없어 그냥 빠진다.
+ */
+function mergeHourly(
+  forecast: Forecast,
+  stored: DayExtremes | null,
+  now: Date,
+): TodayHourly | null {
+  const todayKey = ymd(now);
+  const remembered = stored?.date === todayKey ? (stored.hourly ?? []) : [];
+
+  const byHour = new Map<string, HourlyRain>();
+  for (const entry of remembered) byHour.set(entry.hour, entry);
+  for (const entry of forecast.hourlyToday) byHour.set(entry.hour, entry);
+
+  if (byHour.size === 0) return null;
+
+  const entries = [...byHour.values()].sort((a, b) => a.hour.localeCompare(b.hour));
+
+  // 지금 시각까지의 합계. 아직 오지 않은 시간은 빼야 '지금까지'가 된다.
+  const nowHour = now.getHours();
+  const rainSoFar = entries
+    .filter((entry) => Number(entry.hour.slice(0, 2)) <= nowHour)
+    .reduce((sum, entry) => sum + entry.amount, 0);
+
+  return { entries, rainSoFar };
+}
+
+/**
  * 보고 있는 지역의 날씨를 받아 온다.
  *
  * 캐시를 먼저 보여주고 뒤에서 새로 받아오는 방식이다. 앱을 켜자마자 지난번 값이 뜨므로
@@ -161,6 +210,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
           loading: true,
           error: null,
           today: mergeToday(cached.data.forecast, stored, new Date(cached.fetchedAt)),
+          todayHourly: mergeHourly(cached.data.forecast, stored, new Date(cached.fetchedAt)),
         });
       }
     }
@@ -180,6 +230,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
 
       const stored = await loadValue<DayExtremes>(extremesKey);
       const today = mergeToday(forecast, stored, now);
+      const todayHourly = mergeHourly(forecast, stored, now);
 
       setState({
         regionCode: region.code,
@@ -188,13 +239,19 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
         loading: false,
         error: null,
         today,
+        todayHourly,
       });
 
       saveValue<CachedWeather>(key, { data: fresh, fetchedAt: stamp });
-      // 근사치는 저장하지 않는다. 저장해 두면 다음에도 그 값이 하루 전체 값처럼 쓰인다.
-      if (today && !today.partial) {
-        saveValue<DayExtremes>(extremesKey, { date: ymd(now), high: today.high, low: today.low });
-      }
+
+      // 오늘 본 것은 남겨 둔다. 기온 근사치는 저장하지 않는다 —
+      // 저장하면 다음에도 그 값이 하루 전체 값처럼 쓰인다.
+      saveValue<DayExtremes>(extremesKey, {
+        date: ymd(now),
+        high: today && !today.partial ? today.high : (stored?.date === ymd(now) ? stored.high : null),
+        low: today && !today.partial ? today.low : (stored?.date === ymd(now) ? stored.low : null),
+        hourly: todayHourly?.entries,
+      });
     } catch (caught) {
       if (requested.current !== region.code) return;
 
@@ -210,6 +267,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
               loading: false,
               error: kind,
               today: null,
+              todayHourly: null,
             },
       );
     }
@@ -243,6 +301,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
       error: matched?.error ?? null,
       empty: !matched?.data,
       today: matched?.today ?? null,
+      todayHourly: matched?.todayHourly ?? null,
       refresh,
     };
   }, [state, activeRegion.code, refresh]);

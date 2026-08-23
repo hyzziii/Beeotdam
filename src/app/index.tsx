@@ -19,12 +19,21 @@ export default function HomeScreen() {
   const styles = useStyles();
 
   const { activeRegion } = useSettings();
-  const { data, fetchedAt, loading, error, empty, today } = useWeather();
+  const { data, fetchedAt, loading, error, empty, today, todayHourly } = useWeather();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const current = data?.current;
   const todayForecast = data?.forecast.daily[0];
   const hourly = data?.forecast.hourly;
+
+  /*
+   * 차트는 오늘을 보여주는 게 기본이다. 20시가 지나 오늘 칸이 하나도 안 남으면
+   * 그때만 다음 날로 넘어간다.
+   */
+  const chartHourly = todayHourly?.entries.length ? todayHourly.entries : (hourly ?? null);
+  const chartDate = todayHourly?.entries.length
+    ? todayKey()
+    : (data?.forecast.hourlyDate ?? null);
   // 오늘 남은 시간 중 가장 높은 강수확률. 카드의 '강수확률'이 이 값이다.
   const peakProb = hourly?.length ? Math.max(...hourly.map((entry) => entry.prob)) : null;
   const totalRain = hourly?.reduce((sum, entry) => sum + entry.amount, 0) ?? null;
@@ -111,8 +120,9 @@ export default function HomeScreen() {
         )}
 
         <HourlyRainCard
-          hourly={data?.forecast.hourly ?? null}
-          date={data?.forecast.hourlyDate ?? null}
+          hourly={chartHourly}
+          date={chartDate}
+          rainSoFar={todayHourly?.rainSoFar ?? null}
         />
         <DamLevelList />
         <WeeklyWeatherList />
@@ -149,6 +159,13 @@ function WeatherStat({
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
+}
+
+/** 오늘 날짜 'YYYYMMDD'. */
+function todayKey() {
+  const now = new Date();
+  const pad2 = (value: number) => String(value).padStart(2, '0');
+  return `${now.getFullYear()}${pad2(now.getMonth() + 1)}${pad2(now.getDate())}`;
 }
 
 /** 기온을 '23°'로. 값이 없으면 자리만 남긴다. */
