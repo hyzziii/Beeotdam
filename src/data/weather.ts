@@ -1,21 +1,3 @@
-export const hourlyRain = [
-    { hour: '06시', prob: 10, amount: 0 },
-    { hour: '07시', prob: 15, amount: 0 },
-    { hour: '08시', prob: 20, amount: 0.2 },
-    { hour: '09시', prob: 35, amount: 0.8 },
-    { hour: '10시', prob: 55, amount: 2.1 },
-    { hour: '11시', prob: 65, amount: 3.4 },
-    { hour: '12시', prob: 75, amount: 5.2 },
-    { hour: '13시', prob: 80, amount: 6.8 },
-    { hour: '14시', prob: 85, amount: 7.5 },
-    { hour: '15시', prob: 70, amount: 4.2 },
-    { hour: '16시', prob: 55, amount: 2.0 },
-    { hour: '17시', prob: 40, amount: 0.9 },
-    { hour: '18시', prob: 25, amount: 0.3 },
-    { hour: '19시', prob: 15, amount: 0 },
-    { hour: '20시', prob: 10, amount: 0 },
-]
-
 export const weeklyWeather = [
     { day: '오늘',  short: '화', icon: '🌧', high: 23, low: 16, rain: 75, desc: '비' },
     { day: '내일',  short: '수', icon: '🌦', high: 24, low: 17, rain: 55, desc: '가끔 비' },
@@ -66,6 +48,3 @@ export const weatherStats: WeatherStat[] = [
     { icon: '🌅', value: '05:54',     label: '일출 · 오전' },
     { icon: '🌇', value: '19:28',     label: '일몰 · 오후' },
 ]
-
-/** 시간별 목록에서 '현재' 배지를 붙일 시각. 샘플이라 고정값이다. */
-export const currentHour = '09시'

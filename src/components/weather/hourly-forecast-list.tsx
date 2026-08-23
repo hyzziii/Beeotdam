@@ -1,25 +1,41 @@
 import { Text, View } from 'react-native';
 import { createStyles } from '@/theme/theme-context';
 
+import { HourlyRain } from '@/api/kma';
+import { Skeleton } from '@/components/common/skeleton';
 import { AppRadius, AppSpacing, RAIN_HIGHLIGHT, pct } from '@/constants/app-theme';
-import { currentHour, hourlyRain } from '@/data';
 
-/** hourlyRain에는 아이콘 필드가 없어서 강수확률로 대신 고른다. */
-function hourIcon(prob: number) {
-  if (prob >= 70) return '🌧';
-  if (prob >= 40) return '🌦';
-  return '⛅';
-}
-
-export function HourlyForecastList() {
+export function HourlyForecastList({
+  hourly,
+  currentHour,
+}: {
+  hourly: HourlyRain[] | null;
+  /** '14시'. 목록이 오늘이 아니면 null이라 '현재' 배지가 붙지 않는다. */
+  currentHour: string | null;
+}) {
   const styles = useStyles();
+
+  if (hourly === null) {
+    return (
+      <View style={styles.card}>
+        {Array.from({ length: 6 }, (_, index) => (
+          <View key={index} style={[styles.row, index < 5 && styles.rowDivider]}>
+            <Skeleton width={38} height={14} />
+            <View style={styles.middle}>
+              <Skeleton width="70%" height={12} />
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
 
   return (
     <View style={styles.card}>
-      {hourlyRain.map((item, index) => {
+      {hourly.map((item, index) => {
         const isCurrent = item.hour === currentHour;
         const rainy = item.prob >= RAIN_HIGHLIGHT;
-        const last = index === hourlyRain.length - 1;
+        const last = index === hourly.length - 1;
 
         return (
           <View
@@ -27,7 +43,7 @@ export function HourlyForecastList() {
             style={[styles.row, !last && styles.rowDivider, isCurrent && styles.rowCurrent]}>
             <Text style={[styles.hour, isCurrent && styles.hourCurrent]}>{item.hour}</Text>
 
-            <Text style={styles.icon}>{hourIcon(item.prob)}</Text>
+            <Text style={styles.icon}>{item.icon}</Text>
 
             <View style={styles.middle}>
               <Text style={[styles.prob, isCurrent && styles.probCurrent]}>

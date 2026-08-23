@@ -9,30 +9,55 @@ import { ForecastMode, ForecastToggle } from '@/components/weather/forecast-togg
 import { HourlyForecastList } from '@/components/weather/hourly-forecast-list';
 import { WeatherStatGrid } from '@/components/weather/weather-stat-grid';
 import { AppSpacing } from '@/constants/app-theme';
+import { regionLabel } from '@/data';
+import { useSettings } from '@/settings/settings-context';
+import { useWeather } from '@/weather/weather-context';
 
 export default function WeatherScreen() {
   const styles = useStyles();
 
+  const { activeRegion } = useSettings();
+  const { data } = useWeather();
+
   const [mode, setMode] = useState<ForecastMode>('hourly');
+
+  const forecast = data?.forecast;
+  // 목록이 오늘 것일 때만 '현재' 배지를 붙인다. 저녁에는 내일 예보를 보여준다.
+  const currentHour = isToday(forecast?.hourlyDate ?? null)
+    ? `${String(new Date().getHours()).padStart(2, '0')}시`
+    : null;
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>날씨 상세</Text>
-        <Text style={styles.meta}>기상청 · 강남구, 서울 기준</Text>
+        <Text style={styles.meta}>기상청 · {regionLabel(activeRegion)} 기준</Text>
 
         <View style={styles.toggleWrap}>
           <ForecastToggle value={mode} onChange={setMode} />
         </View>
 
         {/* 주간 예보는 Home에 이미 있는 목록을 그대로 재사용한다 */}
-        {mode === 'hourly' ? <HourlyForecastList /> : <WeeklyWeatherList />}
+        {mode === 'hourly' ? (
+          <HourlyForecastList hourly={forecast?.hourly ?? null} currentHour={currentHour} />
+        ) : (
+          <WeeklyWeatherList />
+        )}
 
         <AirQualityCard />
         <WeatherStatGrid />
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+/** 'YYYYMMDD'가 오늘인지. */
+function isToday(date: string | null) {
+  if (date === null) return false;
+
+  const now = new Date();
+  const pad2 = (value: number) => String(value).padStart(2, '0');
+  return date === `${now.getFullYear()}${pad2(now.getMonth() + 1)}${pad2(now.getDate())}`;
 }
 
 const useStyles = createStyles((c) => ({
