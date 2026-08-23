@@ -2,6 +2,13 @@ export type DamStatus = 'surplus' | 'good' | 'normal' | 'caution' | 'warning'
 
 export interface Dam {
     id: string
+    /**
+     * K-water 수문 운영 정보 조회에 쓰는 댐 코드.
+     *
+     * 코드를 넣고 '수문 제원 현황'이 돌려주는 댐 이름으로 하나씩 확인한 값이다.
+     * 추측한 코드도 정상 응답하면서 엉뚱한 댐 자료를 주므로 확인 없이 넣으면 안 된다.
+     */
+    damCode: string
     name: string
     region: string
     river: string
@@ -20,6 +27,7 @@ export interface Dam {
 export const dams: Dam[] = [
     {
         id: 'soyang',
+        damCode: '1012110',
         name: '소양강댐',
         region: '강원 춘천',
         river: '소양강',
@@ -42,6 +50,7 @@ export const dams: Dam[] = [
     },
     {
         id: 'chungju',
+        damCode: '1003110',
         name: '충주댐',
         region: '충북 충주',
         river: '남한강',
@@ -64,6 +73,7 @@ export const dams: Dam[] = [
     },
     {
         id: 'andong',
+        damCode: '2001110',
         name: '안동댐',
         region: '경북 안동',
         river: '낙동강',
@@ -86,6 +96,7 @@ export const dams: Dam[] = [
     },
     {
         id: 'daecheong',
+        damCode: '3008110',
         name: '대청댐',
         region: '충남 대전',
         river: '금강',
@@ -108,6 +119,7 @@ export const dams: Dam[] = [
     },
     {
         id: 'hapcheon',
+        damCode: '2015110',
         name: '합천댐',
         region: '경남 합천',
         river: '황강',
