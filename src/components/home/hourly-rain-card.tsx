@@ -22,13 +22,10 @@ const SCROLL_LEAD = 1;
 export function HourlyRainCard({
   hourly,
   date,
-  rainSoFar,
 }: {
   hourly: HourlyRain[] | null;
   /** hourly가 어느 날짜인지(YYYYMMDD). 부제목을 오늘/내일로 맞추는 데 쓴다. */
   date: string | null;
-  /** 오늘 지금까지의 강수량 합계(mm). 오늘이 아니면 null. */
-  rainSoFar: number | null;
 }) {
   const styles = useStyles();
   const theme = useAppTheme();
@@ -47,10 +44,7 @@ export function HourlyRainCard({
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>시간대별 강수</Text>
-          <Text style={styles.subtitle}>
-            {describeDay(date)} 오전 6시 ~ 오후 8시
-            {rainSoFar !== null && ` · 지금까지 ${rainSoFar.toFixed(1)}㎜`}
-          </Text>
+          <Text style={styles.subtitle}>{describeDay(date)} 오전 6시 ~ 오후 8시</Text>
         </View>
 
         <View style={styles.legend}>

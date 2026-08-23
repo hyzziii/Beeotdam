@@ -119,11 +119,7 @@ export default function HomeScreen() {
           </View>
         )}
 
-        <HourlyRainCard
-          hourly={chartHourly}
-          date={chartDate}
-          rainSoFar={todayHourly?.rainSoFar ?? null}
-        />
+        <HourlyRainCard hourly={chartHourly} date={chartDate} />
         <DamLevelList />
         <WeeklyWeatherList />
       </ScrollView>

@@ -38,11 +38,9 @@ interface DayExtremes {
   hourly?: HourlyRain[];
 }
 
-/** 오늘 하루의 시간별 값과 지금까지의 강수량. */
+/** 오늘 하루의 시간별 값. */
 export interface TodayHourly {
   entries: HourlyRain[];
-  /** 지금 시각까지의 강수량 합계(mm). 예보값을 더한 것이라 실측은 아니다. */
-  rainSoFar: number;
 }
 
 /** 화면에 보여줄 오늘의 최고·최저. */
@@ -158,15 +156,7 @@ function mergeHourly(
 
   if (byHour.size === 0) return null;
 
-  const entries = [...byHour.values()].sort((a, b) => a.hour.localeCompare(b.hour));
-
-  // 지금 시각까지의 합계. 아직 오지 않은 시간은 빼야 '지금까지'가 된다.
-  const nowHour = now.getHours();
-  const rainSoFar = entries
-    .filter((entry) => Number(entry.hour.slice(0, 2)) <= nowHour)
-    .reduce((sum, entry) => sum + entry.amount, 0);
-
-  return { entries, rainSoFar };
+  return { entries: [...byHour.values()].sort((a, b) => a.hour.localeCompare(b.hour)) };
 }
 
 /**
