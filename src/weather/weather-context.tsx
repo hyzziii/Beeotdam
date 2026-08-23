@@ -301,13 +301,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    /*
-     * 규칙은 load 안에 setState가 있다는 것만 보고 동기 호출로 판단하는데, load는 async라
-     * 상태 변경이 전부 await 뒤에서 일어난다. 렌더가 연쇄되지 않으므로 오탐이다.
-     *
-     * 바깥에서 온 값(지역)에 맞춰 서버에서 받아오는 일은 effect가 맡는 게 맞다.
-     */
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // 바깥에서 온 값(지역)에 맞춰 서버에서 받아오는 일은 effect가 맡는 게 맞다
     load(activeRegion, { useCache: true });
   }, [activeRegion, load]);
 
