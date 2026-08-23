@@ -81,6 +81,24 @@ export function relatedDams(region: Region): RelatedDam[] {
     return BY_DISTRICT[`${region.sido}:${region.district}`] ?? BY_SIDO[region.sido] ?? []
 }
 
+/**
+ * 연결된 댐이 없는 이유. 사정이 다른 지역만 적는다.
+ *
+ * 근거를 아직 확인하지 못한 것과, 원래 댐이 없는 것은 다르다. 제주는 후자다 —
+ * K-water가 관리하는 57개 시설 중 제주에 있는 것이 없다.
+ */
+const NO_DAM_REASON: Record<string, string> = {
+    제주: '제주는 지하수를 주 수원으로 씁니다. K-water가 관리하는 댐이 없어요.',
+}
+
+/** 연결이 없을 때 화면에 쓸 문구. */
+export function noRelationMessage(region: Region): string {
+    return (
+        NO_DAM_REASON[region.sido] ??
+        '이 지역과 연결된 댐 정보를 아직 확인하지 못했어요.'
+    )
+}
+
 export function regionDams(region: Region): RegionDams {
     return {
         regionCode: region.code,
