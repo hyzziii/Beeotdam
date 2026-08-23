@@ -1,8 +1,26 @@
+import { DamLevels } from '@/data';
+
 /**
- * 홍수기 제한 수위(%). 저수율 진행바에 눈금으로 표시된다.
+ * 홍수 경보 단계.
  *
- * 실제 홍수기 제한수위는 댐마다 정해진 수위(EL.m)이고 저수율 백분율이 아니다. 이 값은
- * Figma 시안의 눈금 위치를 그대로 옮긴 것이라 근거가 약하다. 제원 API가 주는
- * 계획홍수위·상시만수위로 댐별로 계산하는 게 맞다.
+ * 가뭄 쪽과 달리 이건 계산할 수 있다. 댐마다 정해진 수위 기준이 제원 API에 있고,
+ * 현재 수위는 운영 API가 준다. 전국 공통 기준을 임의로 정할 필요가 없다.
+ *
+ * 평상시에는 null이라 화면에 아무것도 붙지 않는다. 근거 없는 '양호' 배지를 만드는 대신
+ * 실제로 기준을 넘었을 때만 알린다.
  */
-export const FLOOD_LIMIT_PERCENT = 80;
+export type FloodAlert = 'designFlood' | 'floodLimit'
+
+/**
+ * 현재 수위가 어느 기준을 넘었는지.
+ *
+ * 홍수기 제한수위와 상시만수위가 같은 댐이 많아(대청·주암·운문 등) 둘을 나누지 않고,
+ * 실제로 다른 뜻을 갖는 두 단계만 본다.
+ *   designFlood — 계획홍수위 초과. 댐 설계 한계에 닿은 상태
+ *   floodLimit  — 홍수기 제한수위 초과. 홍수기라면 낮춰야 하는 수위
+ */
+export function floodAlert(waterLevel: number, levels: DamLevels): FloodAlert | null {
+    if (waterLevel >= levels.designFlood) return 'designFlood'
+    if (waterLevel >= levels.floodLimit) return 'floodLimit'
+    return null
+}

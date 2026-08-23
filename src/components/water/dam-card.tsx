@@ -5,7 +5,7 @@ import { ReservoirRing } from './reservoir-ring';
 
 import { Skeleton } from '@/components/common/skeleton';
 import { AppRadius, AppSpacing, pct } from '@/constants/app-theme';
-import { FLOOD_LIMIT_PERCENT } from '@/lib/dam';
+import { floodAlert } from '@/lib/dam';
 import { createStyles, useAppTheme } from '@/theme/theme-context';
 import { DamEntry } from '@/water/dam-context';
 import { failureMessage } from '@/weather/failure-message';
@@ -13,6 +13,12 @@ import { failureMessage } from '@/weather/failure-message';
 const KIND_LABEL = {
   multipurpose: '다목적댐',
   watersupply: '용수전용댐',
+} as const;
+
+/** 홍수 경보 단계별 문구와 색. 팔레트에 위험색이 없어 여기서 정한다. */
+const ALERT = {
+  designFlood: { label: '계획홍수위 초과', color: '#DC2626', bg: '#FDECEC' },
+  floodLimit: { label: '홍수기 제한수위 초과', color: '#C2410C', bg: '#FEF0E7' },
 } as const;
 
 /**
@@ -32,6 +38,8 @@ export function DamCard({ entry }: { entry: DamEntry }) {
   const { dam, relation, snapshot, error } = entry;
 
   const current = snapshot?.current ?? null;
+  // 평상시에는 null이라 아무것도 붙지 않는다
+  const alert = current ? floodAlert(current.waterLevel, dam.levels) : null;
   const previous = snapshot?.previousLevel ?? null;
   const delta = current && previous !== null ? current.level - previous : null;
 
@@ -56,23 +64,21 @@ export function DamCard({ entry }: { entry: DamEntry }) {
             <>
               <View style={styles.track}>
                 <View style={[styles.fill, { width: pct(current.level) }]} />
-                {/* 저수율이 제한선을 넘으면 눈금이 채워진 막대 위에 놓여 같은 색끼리 묻힌다 */}
-                <View
-                  style={[
-                    styles.floodMark,
-                    {
-                      left: pct(FLOOD_LIMIT_PERCENT),
-                      backgroundColor: current.level >= FLOOD_LIMIT_PERCENT ? '#FFFFFF' : '#EF4444',
-                    },
-                  ]}
-                />
               </View>
 
               <View style={styles.scaleRow}>
                 <Text style={styles.scaleEdge}>0%</Text>
-                <Text style={styles.floodLabel}>▲ 홍수 제한 {FLOOD_LIMIT_PERCENT}%</Text>
                 <Text style={styles.scaleEdge}>100%</Text>
               </View>
+
+              {alert && (
+                <View style={[styles.alert, { backgroundColor: ALERT[alert].bg }]}>
+                  <Text style={[styles.alertText, { color: ALERT[alert].color }]}>
+                    ⚠ {ALERT[alert].label} · 수위 {current.waterLevel}m / 기준{' '}
+                    {alert === 'designFlood' ? dam.levels.designFlood : dam.levels.floodLimit}m
+                  </Text>
+                </View>
+              )}
 
               <View style={styles.flowRow}>
                 <Text style={styles.flowText}>
@@ -219,11 +225,7 @@ const useStyles = createStyles((c) => ({
     borderRadius: 4,
     backgroundColor: c.accent,
   },
-  floodMark: {
-    position: 'absolute',
-    width: 2,
-    height: 8,
-  },
+
   scaleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -233,10 +235,15 @@ const useStyles = createStyles((c) => ({
     fontSize: 9,
     color: c.faint,
   },
-  floodLabel: {
-    fontSize: 9,
+  alert: {
+    marginTop: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  alertText: {
+    fontSize: 10,
     fontWeight: '700',
-    color: '#EF4444',
   },
   flowRow: {
     flexDirection: 'row',
