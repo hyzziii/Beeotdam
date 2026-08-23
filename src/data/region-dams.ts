@@ -42,11 +42,22 @@ const YONGDAM_SOURCE =
     '용담댐지사: "전주·익산·군산 등 전북지역 일원과 군장 산업기지 등 서해안 개발 사업지역에 ' +
     '연간 4억9천3백만톤의 맑고 깨끗한 물을 안정적으로 공급" (kwater.or.kr)'
 const JUAM_SOURCE = '주암댐지사: "광주, 전남지역의 원활한 용수 공급" (kwater.or.kr)'
+const CHUNGJU_WIDE_SOURCE =
+    '충주댐지사: "서울, 인천, 성남, 하남 등 13개 지자체 및 일반고객에 생활, 공업, ' +
+    '하천유지용수(3,490백만㎡)공급업무" (kwater.or.kr)'
+const CHUNGJU_LOCAL_SOURCE =
+    '충주댐지사 급수구역: "충주시,이천시,안성시,음성군,괴산군,진천군,증평군" (kwater.or.kr)'
 
 /** 시/도 전체에 걸리는 관계. */
 const BY_SIDO: Record<string, RelatedDam[]> = {
-    서울: [{ damId: 'soyang', damName: '소양강댐', relation: '주요 수원', source: SOYANG_SOURCE }],
-    인천: [{ damId: 'soyang', damName: '소양강댐', relation: '관련 수원', source: SOYANG_SOURCE }],
+    서울: [
+        { damId: 'soyang', damName: '소양강댐', relation: '주요 수원', source: SOYANG_SOURCE },
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_WIDE_SOURCE },
+    ],
+    인천: [
+        { damId: 'soyang', damName: '소양강댐', relation: '관련 수원', source: SOYANG_SOURCE },
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_WIDE_SOURCE },
+    ],
     경기: [{ damId: 'soyang', damName: '소양강댐', relation: '관련 수원', source: SOYANG_SOURCE }],
     전북: [{ damId: 'yongdam', damName: '용담댐', relation: '관련 수원', source: YONGDAM_SOURCE }],
     전남광주: [{ damId: 'juam', damName: '주암댐', relation: '주요 수원', source: JUAM_SOURCE }],
@@ -57,6 +68,43 @@ const BY_SIDO: Record<string, RelatedDam[]> = {
  * 키는 '시도:시군구'.
  */
 const BY_DISTRICT: Record<string, RelatedDam[]> = {
+    '경기:이천시': [
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_LOCAL_SOURCE },
+    ],
+    '경기:안성시': [
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_LOCAL_SOURCE },
+    ],
+    '충북:충주시': [
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_LOCAL_SOURCE },
+    ],
+    '충북:음성군': [
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_LOCAL_SOURCE },
+    ],
+    '충북:괴산군': [
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_LOCAL_SOURCE },
+    ],
+    '충북:진천군': [
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_LOCAL_SOURCE },
+    ],
+    '충북:증평군': [
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_LOCAL_SOURCE },
+    ],
+    '경기:성남시 수정구': [
+        { damId: 'soyang', damName: '소양강댐', relation: '관련 수원', source: SOYANG_SOURCE },
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_WIDE_SOURCE },
+    ],
+    '경기:성남시 중원구': [
+        { damId: 'soyang', damName: '소양강댐', relation: '관련 수원', source: SOYANG_SOURCE },
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_WIDE_SOURCE },
+    ],
+    '경기:성남시 분당구': [
+        { damId: 'soyang', damName: '소양강댐', relation: '관련 수원', source: SOYANG_SOURCE },
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_WIDE_SOURCE },
+    ],
+    '경기:하남시': [
+        { damId: 'soyang', damName: '소양강댐', relation: '관련 수원', source: SOYANG_SOURCE },
+        { damId: 'chungju', damName: '충주댐', relation: '주요 수원', source: CHUNGJU_WIDE_SOURCE },
+    ],
     '전북:전주시 완산구': [
         { damId: 'yongdam', damName: '용담댐', relation: '주요 수원', source: YONGDAM_SOURCE },
     ],
