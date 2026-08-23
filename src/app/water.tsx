@@ -5,10 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DamFilterRow } from '@/components/water/dam-filter';
 import { DamCard } from '@/components/water/dam-card';
-import { WaterSummaryCard } from '@/components/water/water-summary-card';
 import { AppSpacing } from '@/constants/app-theme';
 import { dams } from '@/data';
-import { DamFilter, cautionCount, filterDams, nationalAverageLevel, safeCount } from '@/lib/dam';
+import { DamFilter, filterDams } from '@/lib/dam';
 
 /** 샘플 데이터라 갱신 시각도 고정값이다. 실제 API를 붙이면 응답 시각으로 교체한다. */
 const LAST_UPDATED = '08.18 14:00';
@@ -28,12 +27,6 @@ export default function WaterScreen() {
           <Text style={styles.meta}>K-water · 최종 업데이트 {LAST_UPDATED}</Text>
           <View style={styles.liveDot} />
         </View>
-
-        <WaterSummaryCard
-          averageLevel={nationalAverageLevel(dams)}
-          safeCount={safeCount(dams)}
-          cautionCount={cautionCount(dams)}
-        />
 
         <DamFilterRow value={filter} onChange={setFilter} />
 

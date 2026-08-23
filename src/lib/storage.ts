@@ -65,6 +65,10 @@ export function weatherCacheKey(regionCode: string) {
  * 사라진다. 날씨 앱들이 오늘 최고·최저를 하루 종일 보여줄 수 있는 건 지나간 값을 들고
  * 있기 때문이다. 우리도 한 번 본 값을 그날이 끝날 때까지 남겨 둔다.
  */
+export function damCacheKey(damCode: string) {
+  return `dam:${damCode}`;
+}
+
 export function dayExtremesKey(regionCode: string) {
   return `day-extremes:${regionCode}`;
 }
