@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DamLevelList } from '@/components/home/dam-level-list';
 import { RegionPicker } from '@/components/region/region-picker';
+import { WeatherError } from '@/components/weather/weather-error';
 import { HourlyRainCard } from '@/components/home/hourly-rain-card';
 import { WeeklyWeatherList } from '@/components/home/weekly-weather-list';
 import { ApiFailureKind } from '@/api/http';
@@ -19,7 +20,8 @@ export default function HomeScreen() {
   const styles = useStyles();
 
   const { activeRegion } = useSettings();
-  const { data, fetchedAt, loading, error, empty, today, todayHourly } = useWeather();
+  const { data, fetchedAt, loading, error, empty, today, todayHourly, showError, dismissError, refresh } =
+    useWeather();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const current = data?.current;
@@ -60,68 +62,75 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* 현재 날씨 */}
-        <View style={styles.weatherCard}>
-          <View style={styles.weatherTop}>
-            <View>
-              {empty ? (
-                <>
-                  <Skeleton width={110} height={52} />
-                  <View style={styles.skeletonGap}>
-                    <Skeleton width={80} height={18} />
-                  </View>
-                  <View style={styles.skeletonGap}>
-                    <Skeleton width={150} height={13} />
-                  </View>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.temperature}>{formatTemp(current?.temperature)}</Text>
-                  <Text style={styles.weatherDescription}>{todayForecast?.desc ?? '—'}</Text>
-                  <Text style={styles.temperatureInfo}>{describeRange(today)}</Text>
-                </>
-              )}
+        {showError && error ? (
+          /* 헤더는 남겨 둔다. 이 지역 자료가 없어 실패한 경우 다른 지역으로 옮겨야 한다. */
+          <WeatherError kind={error} onRetry={refresh} onShowCached={data ? dismissError : null} />
+        ) : (
+          <>
+            {/* 현재 날씨 */}
+            <View style={styles.weatherCard}>
+              <View style={styles.weatherTop}>
+                <View>
+                  {empty ? (
+                    <>
+                      <Skeleton width={110} height={52} />
+                      <View style={styles.skeletonGap}>
+                        <Skeleton width={80} height={18} />
+                      </View>
+                      <View style={styles.skeletonGap}>
+                        <Skeleton width={150} height={13} />
+                      </View>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={styles.temperature}>{formatTemp(current?.temperature)}</Text>
+                      <Text style={styles.weatherDescription}>{todayForecast?.desc ?? '—'}</Text>
+                      <Text style={styles.temperatureInfo}>{describeRange(today)}</Text>
+                    </>
+                  )}
+                </View>
+
+                <Text style={styles.weatherIcon}>{empty ? '　' : (todayForecast?.icon ?? '⛅')}</Text>
+              </View>
+
+              <View style={styles.weatherStats}>
+                <WeatherStat
+                  icon="☔"
+                  value={peakProb === null ? '—' : `${peakProb}%`}
+                  label="강수확률"
+                  loading={empty}
+                />
+                <WeatherStat
+                  icon="💧"
+                  value={totalRain === null ? '—' : `${totalRain.toFixed(1)}mm`}
+                  label="예상 강수량"
+                  loading={empty}
+                />
+                <WeatherStat
+                  icon="💦"
+                  value={current?.humidity === null || current?.humidity === undefined ? '—' : `${current.humidity}%`}
+                  label="습도"
+                  loading={empty}
+                />
+              </View>
             </View>
 
-            <Text style={styles.weatherIcon}>{empty ? '　' : (todayForecast?.icon ?? '⛅')}</Text>
-          </View>
+            {/* 우산 알림. 비 올 시간대가 있을 때만 나온다. */}
+            {umbrella && (
+              <View style={styles.alertCard}>
+                <Text style={styles.alertTitle}>☂️ 우산 챙기세요!</Text>
+                <Text style={styles.alertText}>
+                  {umbrella.from}~{umbrella.to} 비가 와요. {umbrella.peakHour}에 강수확률이{' '}
+                  {umbrella.peakProb}%로 가장 높아요.
+                </Text>
+              </View>
+            )}
 
-          <View style={styles.weatherStats}>
-            <WeatherStat
-              icon="☔"
-              value={peakProb === null ? '—' : `${peakProb}%`}
-              label="강수확률"
-              loading={empty}
-            />
-            <WeatherStat
-              icon="💧"
-              value={totalRain === null ? '—' : `${totalRain.toFixed(1)}mm`}
-              label="예상 강수량"
-              loading={empty}
-            />
-            <WeatherStat
-              icon="💦"
-              value={current?.humidity === null || current?.humidity === undefined ? '—' : `${current.humidity}%`}
-              label="습도"
-              loading={empty}
-            />
-          </View>
-        </View>
-
-        {/* 우산 알림. 비 올 시간대가 있을 때만 나온다. */}
-        {umbrella && (
-          <View style={styles.alertCard}>
-            <Text style={styles.alertTitle}>☂️ 우산 챙기세요!</Text>
-            <Text style={styles.alertText}>
-              {umbrella.from}~{umbrella.to} 비가 와요. {umbrella.peakHour}에 강수확률이{' '}
-              {umbrella.peakProb}%로 가장 높아요.
-            </Text>
-          </View>
+            <HourlyRainCard hourly={chartHourly} date={chartDate} />
+            <DamLevelList />
+            <WeeklyWeatherList />
+          </>
         )}
-
-        <HourlyRainCard hourly={chartHourly} date={chartDate} />
-        <DamLevelList />
-        <WeeklyWeatherList />
       </ScrollView>
 
       <RegionPicker visible={pickerOpen} onClose={() => setPickerOpen(false)} />

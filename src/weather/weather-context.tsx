@@ -71,6 +71,8 @@ interface RegionState {
   today: TodayTemperature | null;
   /** 지나간 시각까지 합친 오늘의 시간별 값. */
   todayHourly: TodayHourly | null;
+  /** 오류 화면을 사용자가 닫았는지. 다음 실패 때 다시 뜬다. */
+  dismissed: boolean;
 }
 
 type WeatherValue = {
@@ -87,6 +89,10 @@ type WeatherValue = {
   today: TodayTemperature | null;
   /** 오늘 06~20시. 지나간 시각은 기억해 둔 값으로 메운다. */
   todayHourly: TodayHourly | null;
+  /** 오류 화면을 지금 보여줘야 하는지. 실패했고 아직 닫지 않았을 때 true. */
+  showError: boolean;
+  /** 오류 화면을 닫고 가지고 있는 값을 보여준다. */
+  dismissError: () => void;
   refresh: () => void;
 };
 
@@ -201,6 +207,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
           error: null,
           today: mergeToday(cached.data.forecast, stored, new Date(cached.fetchedAt)),
           todayHourly: mergeHourly(cached.data.forecast, stored, new Date(cached.fetchedAt)),
+          dismissed: false,
         });
       }
     }
@@ -230,6 +237,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
         error: null,
         today,
         todayHourly,
+        dismissed: false,
       });
 
       saveValue<CachedWeather>(key, { data: fresh, fetchedAt: stamp });
@@ -249,7 +257,8 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
       // 실패해도 이미 있는 값은 그대로 둔다. 캐시가 있으면 그걸 계속 보여준다.
       setState((prev) =>
         prev && prev.regionCode === region.code
-          ? { ...prev, loading: false, error: kind }
+          ? // 새로 실패했으니 닫아 뒀던 오류 화면을 다시 띄운다
+            { ...prev, loading: false, error: kind, dismissed: false }
           : {
               regionCode: region.code,
               data: null,
@@ -258,6 +267,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
               error: kind,
               today: null,
               todayHourly: null,
+              dismissed: false,
             },
       );
     }
@@ -273,6 +283,10 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load(activeRegion, { useCache: true });
   }, [activeRegion, load]);
+
+  const dismissError = useCallback(() => {
+    setState((prev) => (prev ? { ...prev, dismissed: true } : prev));
+  }, []);
 
   const refresh = useCallback(() => {
     // 손으로 새로고침할 때는 캐시를 다시 읽을 이유가 없다. 이미 화면에 있다.
@@ -292,9 +306,11 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
       empty: !matched?.data,
       today: matched?.today ?? null,
       todayHourly: matched?.todayHourly ?? null,
+      showError: matched?.error != null && !matched.dismissed,
+      dismissError,
       refresh,
     };
-  }, [state, activeRegion.code, refresh]);
+  }, [state, activeRegion.code, dismissError, refresh]);
 
   return <WeatherContext.Provider value={value}>{children}</WeatherContext.Provider>;
 }
