@@ -164,6 +164,13 @@ export interface DailyForecast {
 
 /** 단기예보 원본을 한 번만 받아 여러 화면이 나눠 쓴다. */
 export interface Forecast {
+  /**
+   * 오늘 06~20시 중 응답에 남아 있는 것.
+   *
+   * 기상청은 지나간 시각을 빼므로 낮에 조회하면 앞부분이 없다. 그 빈칸은 예전에 받아
+   * 기억해 둔 값으로 메운다(weather-context). 20시가 지나면 빈 배열이다.
+   */
+  hourlyToday: HourlyRain[];
   hourly: HourlyRain[];
   /**
    * hourly가 어느 날짜인지(YYYYMMDD).
@@ -215,6 +222,7 @@ export async function fetchForecast(grid: GridPoint, now: Date): Promise<Forecas
   const hourly = toHourlyRain(items);
 
   return {
+    hourlyToday: hourlyForDate(items, ymd(now)),
     hourly: hourly.entries,
     hourlyDate: hourly.date,
     daily: toDailyForecast(items, now),
@@ -233,20 +241,25 @@ const HOURLY_END = 20;
  * 발표가 늦은 시각이면 오늘 06시 예보는 이미 지나가 응답에 없다. 그럴 때 앞을 비워 두면
  * 차트가 어긋나므로, 15칸이 온전히 남아 있는 날을 골라 쓴다.
  */
-export function toHourlyRain(items: FcstItem[]): { date: string | null; entries: HourlyRain[] } {
+/** 'YYYYMMDD' */
+function ymd(date: Date) {
+  const pad2 = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}`;
+}
+
+interface HourlyRow extends HourlyRain {
+  date: string;
+  hourNumber: number;
+}
+
+/** 06~20시 구간의 줄만 날짜와 함께 모은다. */
+function collectHourly(items: FcstItem[]): HourlyRow[] {
   const grouped = groupByDateTime(items);
-  const rows: {
-    date: string;
-    hour: number;
-    prob: number;
-    amount: number;
-    icon: string;
-    desc: string;
-  }[] = [];
+  const rows: HourlyRow[] = [];
 
   for (const [key, values] of grouped) {
-    const hour = Number(key.slice(8, 10));
-    if (hour < HOURLY_START || hour > HOURLY_END) continue;
+    const hourNumber = Number(key.slice(8, 10));
+    if (hourNumber < HOURLY_START || hourNumber > HOURLY_END) continue;
 
     const { icon, desc } = describeWeather(
       parseNumber(values.get('SKY')) ?? 1,
@@ -255,13 +268,36 @@ export function toHourlyRain(items: FcstItem[]): { date: string | null; entries:
 
     rows.push({
       date: key.slice(0, 8),
-      hour,
+      hourNumber,
+      hour: `${String(hourNumber).padStart(2, '0')}시`,
       prob: parseNumber(values.get('POP')) ?? 0,
       amount: parseAmount(values.get('PCP')),
       icon,
       desc,
     });
   }
+
+  return rows;
+}
+
+const strip = ({ hour, prob, amount, icon, desc }: HourlyRow): HourlyRain => ({
+  hour,
+  prob,
+  amount,
+  icon,
+  desc,
+});
+
+/** 특정 날짜의 06~20시 줄. 지나간 시각은 응답에 없으므로 앞이 비어 있을 수 있다. */
+export function hourlyForDate(items: FcstItem[], date: string): HourlyRain[] {
+  return collectHourly(items)
+    .filter((row) => row.date === date)
+    .sort((a, b) => a.hourNumber - b.hourNumber)
+    .map(strip);
+}
+
+export function toHourlyRain(items: FcstItem[]): { date: string | null; entries: HourlyRain[] } {
+  const rows = collectHourly(items);
 
   if (rows.length === 0) return { date: null, entries: [] };
 
@@ -270,18 +306,7 @@ export function toHourlyRain(items: FcstItem[]): { date: string | null; entries:
   const target =
     dates.find((date) => rows.filter((row) => row.date === date).length === expected) ?? dates[0];
 
-  return {
-    date: target,
-    entries: rows
-      .filter((row) => row.date === target)
-      .map(({ hour, prob, amount, icon, desc }) => ({
-        hour: `${String(hour).padStart(2, '0')}시`,
-        prob,
-        amount,
-        icon,
-        desc,
-      })),
-  };
+  return { date: target, entries: hourlyForDate(items, target) };
 }
 
 const WEEKDAY_SHORT = ['일', '월', '화', '수', '목', '금', '토'];

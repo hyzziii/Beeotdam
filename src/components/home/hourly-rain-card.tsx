@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { createStyles, useAppTheme } from '@/theme/theme-context';
 
@@ -13,25 +14,43 @@ function scaleBase(hourly: HourlyRain[]) {
   return Math.max(1, ...hourly.map((item) => item.amount));
 }
 
+/** 칸 하나의 폭. 스타일과 스크롤 계산이 어긋나지 않게 한곳에서 쓴다. */
+const COLUMN_WIDTH = 42;
+/** 현재 칸을 왼쪽 끝에 딱 붙이지 않고 앞쪽을 조금 남긴다. */
+const SCROLL_LEAD = 1;
+
 export function HourlyRainCard({
   hourly,
   date,
+  rainSoFar,
 }: {
   hourly: HourlyRain[] | null;
   /** hourly가 어느 날짜인지(YYYYMMDD). 부제목을 오늘/내일로 맞추는 데 쓴다. */
   date: string | null;
+  /** 오늘 지금까지의 강수량 합계(mm). 오늘이 아니면 null. */
+  rainSoFar: number | null;
 }) {
   const styles = useStyles();
   const theme = useAppTheme();
 
+  const chart = useRef<ScrollView>(null);
+  const scrolled = useRef(false);
+
   const maxAmount = hourly ? scaleBase(hourly) : 1;
+
+  // 오늘을 보여줄 때만 '지난 시각' 개념이 있다
+  const showingToday = describeDay(date) === '오늘';
+  const nowHour = new Date().getHours();
 
   return (
     <View style={styles.card}>
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>시간대별 강수</Text>
-          <Text style={styles.subtitle}>{describeDay(date)} 오전 6시 ~ 오후 8시</Text>
+          <Text style={styles.subtitle}>
+            {describeDay(date)} 오전 6시 ~ 오후 8시
+            {rainSoFar !== null && ` · 지금까지 ${rainSoFar.toFixed(1)}㎜`}
+          </Text>
         </View>
 
         <View style={styles.legend}>
@@ -41,9 +60,27 @@ export function HourlyRainCard({
       </View>
 
       <ScrollView
+        ref={chart}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chart}>
+        contentContainerStyle={styles.chart}
+        onContentSizeChange={() => {
+          /*
+            처음 그려질 때 한 번만 현재 시각으로 옮긴다. 오후에 열면 앞쪽 지난 시간만
+            보여서 매번 오른쪽으로 끌어야 했다. 매번 옮기면 사용자가 스크롤해 둔 위치를
+            빼앗으므로 첫 회로 제한한다.
+          */
+          if (scrolled.current || !showingToday || hourly === null) return;
+          scrolled.current = true;
+
+          const index = hourly.findIndex((item) => Number(item.hour.slice(0, 2)) >= nowHour);
+          if (index <= SCROLL_LEAD) return;
+
+          chart.current?.scrollTo({
+            x: (index - SCROLL_LEAD) * COLUMN_WIDTH,
+            animated: false,
+          });
+        }}>
         {hourly === null &&
           // 값이 들어올 자리를 미리 잡아 둔다. 안 그러면 카드가 납작하다 갑자기 커진다.
           Array.from({ length: 8 }, (_, index) => (
@@ -58,11 +95,13 @@ export function HourlyRainCard({
 
         {(hourly ?? []).map((item) => {
           const active = item.prob >= RAIN_HIGHLIGHT;
+          // 이미 지난 시각은 흐리게 둔다. 오늘 흐름은 보이되 앞으로가 눈에 띄게.
+          const past = showingToday && Number(item.hour.slice(0, 2)) < nowHour;
           const height =
             BAR_MIN_HEIGHT + (item.amount / maxAmount) * (BAR_MAX_HEIGHT - BAR_MIN_HEIGHT);
 
           return (
-            <View key={item.hour} style={styles.column}>
+            <View key={item.hour} style={[styles.column, past && styles.columnPast]}>
               <Text style={[styles.prob, active && styles.probActive]}>{item.prob}%</Text>
 
               <View style={styles.barSlot}>
@@ -172,8 +211,11 @@ const useStyles = createStyles((c) => ({
     paddingRight: 4,
   },
   column: {
-    width: 42,
+    width: COLUMN_WIDTH,
     alignItems: 'center',
+  },
+  columnPast: {
+    opacity: 0.4,
   },
   prob: {
     fontSize: 10,
