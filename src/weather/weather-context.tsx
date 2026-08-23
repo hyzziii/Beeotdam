@@ -12,8 +12,18 @@ interface WeatherData {
   forecast: Forecast;
 }
 
+/**
+ * 저장 형태 번호.
+ *
+ * WeatherData의 모양이 바뀌면 올린다. 예전 형태를 그대로 읽으면 없는 필드를 건드려
+ * 터진다 — hourlyToday를 뒤늦게 추가했을 때 실제로 그런 일이 있었다. 번호가 다르면
+ * 캐시를 버리고 새로 받는다.
+ */
+const CACHE_VERSION = 2;
+
 /** 캐시에 저장하는 형태. 언제 받은 값인지 함께 남겨야 화면에 기준 시각을 쓸 수 있다. */
 interface CachedWeather {
+  version?: number;
   data: WeatherData;
   fetchedAt: number;
 }
@@ -158,7 +168,7 @@ function mergeHourly(
 
   const byHour = new Map<string, HourlyRain>();
   for (const entry of remembered) byHour.set(entry.hour, entry);
-  for (const entry of forecast.hourlyToday) byHour.set(entry.hour, entry);
+  for (const entry of forecast.hourlyToday ?? []) byHour.set(entry.hour, entry);
 
   if (byHour.size === 0) return null;
 
@@ -193,10 +203,27 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
     const extremesKey = dayExtremesKey(region.code);
 
     if (useCache) {
-      const [cached, stored] = await Promise.all([
+      /*
+       * 캐시 때문에 앱이 죽는 일은 없어야 한다. 지난번에 저장한 값의 모양이 지금 코드와
+       * 안 맞으면 없는 필드를 건드려 터질 수 있는데, 그건 새로 받아오면 되는 일이라
+       * 화면을 못 쓰게 만들 이유가 없다. 번호로 한 번 걸러내고, 그래도 새면 여기서 잡는다.
+       */
+      try {
+        await showCached();
+      } catch {
+        // 캐시를 못 읽었을 뿐이다. 아래에서 새로 받아온다.
+      }
+    }
+
+    async function showCached() {
+      const [rawCache, stored] = await Promise.all([
         loadValue<CachedWeather>(key),
         loadValue<DayExtremes>(extremesKey),
       ]);
+
+      // 형식이 다른 캐시는 없는 것으로 친다
+      const cached = rawCache?.version === CACHE_VERSION ? rawCache : null;
+
       // 기다리는 동안 지역이 또 바뀌었으면 이 결과는 버린다
       if (cached && requested.current === region.code) {
         setState({
@@ -240,7 +267,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
         dismissed: false,
       });
 
-      saveValue<CachedWeather>(key, { data: fresh, fetchedAt: stamp });
+      saveValue<CachedWeather>(key, { version: CACHE_VERSION, data: fresh, fetchedAt: stamp });
 
       // 오늘 본 것은 남겨 둔다. 기온 근사치는 저장하지 않는다 —
       // 저장하면 다음에도 그 값이 하루 전체 값처럼 쓰인다.
