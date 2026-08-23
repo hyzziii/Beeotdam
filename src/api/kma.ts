@@ -129,11 +129,14 @@ export interface CurrentWeather {
   observedAt: string;
 }
 
-/** 시간대별 강수. src/data/weather.ts의 hourlyRain과 같은 모양이다. */
+/** 시간대별 강수. */
 export interface HourlyRain {
   hour: string;
   prob: number;
   amount: number;
+  /** 그 시각의 하늘 상태 아이콘. */
+  icon: string;
+  desc: string;
 }
 
 /** 일별 예보. src/data/weather.ts의 weeklyWeather와 같은 모양이다. */
@@ -232,17 +235,31 @@ const HOURLY_END = 20;
  */
 export function toHourlyRain(items: FcstItem[]): { date: string | null; entries: HourlyRain[] } {
   const grouped = groupByDateTime(items);
-  const rows: { date: string; hour: number; prob: number; amount: number }[] = [];
+  const rows: {
+    date: string;
+    hour: number;
+    prob: number;
+    amount: number;
+    icon: string;
+    desc: string;
+  }[] = [];
 
   for (const [key, values] of grouped) {
     const hour = Number(key.slice(8, 10));
     if (hour < HOURLY_START || hour > HOURLY_END) continue;
+
+    const { icon, desc } = describeWeather(
+      parseNumber(values.get('SKY')) ?? 1,
+      parseNumber(values.get('PTY')) ?? 0,
+    );
 
     rows.push({
       date: key.slice(0, 8),
       hour,
       prob: parseNumber(values.get('POP')) ?? 0,
       amount: parseAmount(values.get('PCP')),
+      icon,
+      desc,
     });
   }
 
@@ -257,10 +274,12 @@ export function toHourlyRain(items: FcstItem[]): { date: string | null; entries:
     date: target,
     entries: rows
       .filter((row) => row.date === target)
-      .map(({ hour, prob, amount }) => ({
+      .map(({ hour, prob, amount, icon, desc }) => ({
         hour: `${String(hour).padStart(2, '0')}시`,
         prob,
         amount,
+        icon,
+        desc,
       })),
   };
 }
