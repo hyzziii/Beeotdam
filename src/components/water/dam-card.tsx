@@ -137,6 +137,17 @@ export function DamCard({ entry }: { entry: DamEntry }) {
   );
 }
 
+/**
+ * 'MM-DD' → 'M/D'.
+ *
+ * 응답의 관측일시가 '08-23 17시' 형식이라 날짜만 떼면 '08-23'이 된다. 화면에는 앞의 0을
+ * 떼고 슬래시로 보여준다. 묶음 키로도 쓰는 값이라 원본은 그대로 두고 여기서만 바꾼다.
+ */
+function formatDay(day: string) {
+  const [month, date] = day.split('-');
+  return `${Number(month)}/${Number(date)}`;
+}
+
 /** 최근 7일 강수량(막대)과 저수율(수치)을 한눈에 보여준다. */
 function WeeklyTrend({ entry, color }: { entry: DamEntry; color: string }) {
   const styles = useStyles();
@@ -163,7 +174,7 @@ function WeeklyTrend({ entry, color }: { entry: DamEntry; color: string }) {
             </View>
 
             <Text style={[styles.trendLevel, { color }]}>{reading.level.toFixed(1)}</Text>
-            <Text style={styles.trendDay}>{reading.day}</Text>
+            <Text style={styles.trendDay}>{formatDay(reading.day)}</Text>
           </View>
         ))}
       </View>
