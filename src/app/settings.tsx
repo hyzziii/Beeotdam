@@ -3,6 +3,7 @@ import { createStyles, useThemeControl } from '@/theme/theme-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppInfoCard } from '@/components/settings/app-info-card';
+import { DataSourceCard } from '@/components/settings/data-source-card';
 import { DisplayCard } from '@/components/settings/display-card';
 import { NotificationCard } from '@/components/settings/notification-card';
 import { AppSpacing } from '@/constants/app-theme';
@@ -32,6 +33,7 @@ export default function SettingsScreen() {
             theme={preference}
             onThemeChange={setPreference}
           />
+          <DataSourceCard />
           <AppInfoCard />
         </View>
       </ScrollView>
