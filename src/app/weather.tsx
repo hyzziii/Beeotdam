@@ -10,7 +10,7 @@ import { HourlyForecastList } from '@/components/weather/hourly-forecast-list';
 import { WeatherError } from '@/components/weather/weather-error';
 import { WeatherStatGrid } from '@/components/weather/weather-stat-grid';
 import { AppSpacing } from '@/constants/app-theme';
-import { regionLabel } from '@/data';
+import { findMidRegion, regionLabel } from '@/data';
 import { useSettings } from '@/settings/settings-context';
 import { useWeather } from '@/weather/weather-context';
 
@@ -18,7 +18,7 @@ export default function WeatherScreen() {
   const styles = useStyles();
 
   const { activeRegion } = useSettings();
-  const { data, error, showError, dismissError, refresh } = useWeather();
+  const { data, weekly, error, showError, dismissError, refresh } = useWeather();
 
   const [mode, setMode] = useState<ForecastMode>('hourly');
 
@@ -46,7 +46,10 @@ export default function WeatherScreen() {
             {mode === 'hourly' ? (
               <HourlyForecastList hourly={forecast?.hourly ?? null} currentHour={currentHour} />
             ) : (
-              <WeeklyWeatherList />
+              <WeeklyWeatherList
+                days={weekly}
+                midCity={findMidRegion(activeRegion.sido)?.taCity ?? null}
+              />
             )}
 
             <AirQualityCard />

@@ -12,6 +12,7 @@ import { ApiFailureKind } from '@/api/http';
 import { umbrellaAdvice } from '@/api/kma';
 import { Skeleton } from '@/components/common/skeleton';
 import { AppRadius, AppSpacing } from '@/constants/app-theme';
+import { findMidRegion } from '@/data';
 import { useSettings } from '@/settings/settings-context';
 import { failureMessage } from '@/weather/failure-message';
 import { TodayTemperature, useWeather } from '@/weather/weather-context';
@@ -20,8 +21,19 @@ export default function HomeScreen() {
   const styles = useStyles();
 
   const { activeRegion } = useSettings();
-  const { data, fetchedAt, loading, error, empty, today, todayHourly, showError, dismissError, refresh } =
-    useWeather();
+  const {
+    data,
+    fetchedAt,
+    loading,
+    error,
+    empty,
+    today,
+    todayHourly,
+    weekly,
+    showError,
+    dismissError,
+    refresh,
+  } = useWeather();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const current = data?.current;
@@ -128,7 +140,7 @@ export default function HomeScreen() {
 
             <HourlyRainCard hourly={chartHourly} date={chartDate} />
             <DamLevelList />
-            <WeeklyWeatherList />
+            <WeeklyWeatherList days={weekly} midCity={findMidRegion(activeRegion.sido)?.taCity ?? null} />
           </>
         )}
       </ScrollView>

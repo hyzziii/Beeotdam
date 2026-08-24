@@ -1,14 +1,3 @@
-export const weeklyWeather = [
-    { day: '오늘',  short: '화', icon: '🌧', high: 23, low: 16, rain: 75, desc: '비' },
-    { day: '내일',  short: '수', icon: '🌦', high: 24, low: 17, rain: 55, desc: '가끔 비' },
-    { day: '모레',  short: '목', icon: '⛅', high: 26, low: 17, rain: 20, desc: '구름 많음' },
-    { day: '금요일', short: '금', icon: '☀️', high: 29, low: 19, rain: 5,  desc: '맑음' },
-    { day: '토요일', short: '토', icon: '☀️', high: 30, low: 20, rain: 5,  desc: '맑음' },
-    { day: '일요일', short: '일', icon: '⛅', high: 27, low: 19, rain: 25, desc: '구름 조금' },
-    { day: '다음주 월', short: '월', icon: '🌧', high: 22, low: 16, rain: 80, desc: '비' },
-]
-
-
 export type AirGrade = '좋음' | '보통' | '나쁨' | '매우 나쁨'
 
 export interface AirMetric {

@@ -139,7 +139,7 @@ export interface HourlyRain {
   desc: string;
 }
 
-/** 일별 예보. src/data/weather.ts의 weeklyWeather와 같은 모양이다. */
+/** 일별 예보. 주간 목록에서 중기예보와 합쳐 쓴다(weather-context의 buildWeekly). */
 export interface DailyForecast {
   /** YYYYMMDD */
   date: string;
@@ -235,12 +235,6 @@ export async function fetchForecast(grid: GridPoint, now: Date): Promise<Forecas
 const HOURLY_START = 6;
 const HOURLY_END = 20;
 
-/**
- * 시간대별 강수 차트용. 화면이 06시~20시만 보여주므로 그 구간만 남긴다.
- *
- * 발표가 늦은 시각이면 오늘 06시 예보는 이미 지나가 응답에 없다. 그럴 때 앞을 비워 두면
- * 차트가 어긋나므로, 15칸이 온전히 남아 있는 날을 골라 쓴다.
- */
 /** 'YYYYMMDD' */
 function ymd(date: Date) {
   const pad2 = (value: number) => String(value).padStart(2, '0');
@@ -296,6 +290,12 @@ export function hourlyForDate(items: FcstItem[], date: string): HourlyRain[] {
     .map(strip);
 }
 
+/**
+ * 시간대별 강수 차트용. 화면이 06시~20시만 보여주므로 그 구간만 남긴다.
+ *
+ * 발표가 늦은 시각이면 오늘 06시 예보는 이미 지나가 응답에 없다. 그럴 때 앞을 비워 두면
+ * 차트가 어긋나므로, 15칸이 온전히 남아 있는 날을 골라 쓴다.
+ */
 export function toHourlyRain(items: FcstItem[]): { date: string | null; entries: HourlyRain[] } {
   const rows = collectHourly(items);
 
