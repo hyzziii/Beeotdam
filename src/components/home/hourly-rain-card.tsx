@@ -7,11 +7,19 @@ import { Skeleton } from '@/components/common/skeleton';
 import { AppRadius, AppSpacing, RAIN_HIGHLIGHT } from '@/constants/app-theme';
 
 const BAR_MAX_HEIGHT = 64;
+/** 0%인 시각도 칸이 있다는 건 보이게 둔다. */
 const BAR_MIN_HEIGHT = 6;
 
-/** 막대 높이를 나눌 기준. 강수량이 전부 0인 날 0으로 나누지 않도록 최소 1로 둔다. */
-function scaleBase(hourly: HourlyRain[]) {
-  return Math.max(1, ...hourly.map((item) => item.amount));
+/**
+ * 막대 높이. 강수확률 0~100%을 그대로 축으로 쓴다.
+ *
+ * 전에는 강수량(mm)을 높이로 썼다. 비 안 오는 날은 온종일 0.0mm라 모든 막대가 최소
+ * 높이로 붙어 0%와 30%가 구별되지 않았다. 확률은 늘 값이 있어 그래프가 항상 읽힌다.
+ * 강수량은 0보다 클 때만 아래에 mm로 적는다.
+ */
+function barHeight(prob: number) {
+  const ratio = Math.min(Math.max(prob, 0), 100) / 100;
+  return BAR_MIN_HEIGHT + ratio * (BAR_MAX_HEIGHT - BAR_MIN_HEIGHT);
 }
 
 /** 칸 하나의 폭. 스타일과 스크롤 계산이 어긋나지 않게 한곳에서 쓴다. */
@@ -33,8 +41,6 @@ export function HourlyRainCard({
   const chart = useRef<ScrollView>(null);
   const scrolled = useRef(false);
 
-  const maxAmount = hourly ? scaleBase(hourly) : 1;
-
   // 오늘을 보여줄 때만 '지난 시각' 개념이 있다
   const showingToday = describeDay(date) === '오늘';
   const nowHour = new Date().getHours();
@@ -47,9 +53,9 @@ export function HourlyRainCard({
           <Text style={styles.subtitle}>{describeDay(date)} 오전 6시 ~ 오후 8시</Text>
         </View>
 
+        {/* 막대가 하나뿐이라 범례도 하나다. 둘을 걸어 두면 없는 계열을 약속하는 셈이다. */}
         <View style={styles.legend}>
           <LegendItem color={theme.accent} label="강수확률" />
-          <LegendItem color={theme.accentLegend} label="강수량" />
         </View>
       </View>
 
@@ -91,8 +97,6 @@ export function HourlyRainCard({
           const active = item.prob >= RAIN_HIGHLIGHT;
           // 이미 지난 시각은 흐리게 둔다. 오늘 흐름은 보이되 앞으로가 눈에 띄게.
           const past = showingToday && Number(item.hour.slice(0, 2)) < nowHour;
-          const height =
-            BAR_MIN_HEIGHT + (item.amount / maxAmount) * (BAR_MAX_HEIGHT - BAR_MIN_HEIGHT);
 
           return (
             <View key={item.hour} style={[styles.column, past && styles.columnPast]}>
@@ -102,7 +106,7 @@ export function HourlyRainCard({
                 <View
                   style={[
                     styles.bar,
-                    { height },
+                    { height: barHeight(item.prob) },
                     active ? styles.barActive : styles.barInactive,
                   ]}
                 />
