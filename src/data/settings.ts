@@ -70,6 +70,13 @@ export interface DataSource {
     agency: string
     /** 이용허락범위. 공공누리 유형과 조건. */
     license: string
+    /**
+     * 같은 조건을 크리에이티브 커먼즈로 적은 것. 서비스 페이지가 두 배지를 나란히 건다.
+     *
+     * 공공누리 제1유형이 CC BY, 제3유형이 CC BY-ND에 대응한다. 조건이 하나 더 붙는 게
+     * 아니라 같은 말을 국제 라이선스로 다시 쓴 것이다. 배지가 없는 기관은 비운다.
+     */
+    cc?: string
     /** 그 기관에서 쓰는 서비스들. */
     services: string[]
 }
@@ -78,6 +85,7 @@ export const dataSources: DataSource[] = [
     {
         agency: '기상청',
         license: '공공누리 제1유형 (출처표시)',
+        cc: 'CC BY',
         services: ['단기예보 조회서비스', '중기예보 조회서비스'],
     },
     {
@@ -88,6 +96,7 @@ export const dataSources: DataSource[] = [
     {
         agency: '한국환경공단',
         license: '공공누리 제3유형 (출처표시·변경금지)',
+        cc: 'CC BY-ND',
         services: ['에어코리아 대기오염정보', '에어코리아 측정소정보'],
     },
 ]
