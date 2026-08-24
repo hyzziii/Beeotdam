@@ -17,7 +17,16 @@ import { fetchPublicData } from './http';
 
 const BASE_URL = 'https://apis.data.go.kr/1360000/MidFcstInfoService';
 
-/** 중기예보가 다루는 날짜 범위(발표일 기준 며칠 후). */
+/**
+ * 훑어볼 날짜 범위(발표일 기준 며칠 후).
+ *
+ * 시작이 발표 시각마다 밀린다. 06시 발표는 4일 후부터 값이 오는데, 18시 발표는 4일 후가
+ * 비어 있고 5일 후부터 온다. 그 자리는 단기예보 몫이라 중기가 내보내지 않는 것이다.
+ * 그래서 시작을 못 박지 않고 범위를 훑으면서 빈 날은 건너뛴다.
+ *
+ * 끝을 7로 두는 건 주간 목록이 오늘부터 7일까지만 쓰기 때문이다. 발표일이 어제여도
+ * 7일 후는 오늘+6이라 마지막 칸까지 닿는다.
+ */
 const FIRST_DAY = 4;
 const LAST_DAY = 7;
 
@@ -89,12 +98,20 @@ function iconFor(desc: string): string {
 /**
  * 8일 이후는 오전·오후가 나뉘지 않아 필드 이름이 다르다.
  * 4~7일: wf4Am / wf4Pm,  8~10일: wf8
+ *
+ * 그 날짜가 응답에 아예 없으면 null을 준다. 강수확률은 없을 때 0으로 물러서므로 빈 날을
+ * 가려내는 기준으로 쓸 수 없다 — 날씨 문구와 기온이 모두 없는 것으로 판단한다.
  */
 function readDay(land: LandItem, ta: TaItem, day: number) {
   const split = day <= 7;
 
   const descAm = String(land[split ? `wf${day}Am` : `wf${day}`] ?? '');
   const descPm = String(land[split ? `wf${day}Pm` : `wf${day}`] ?? descAm);
+
+  const high = toNumber(ta[`taMax${day}`]);
+  const low = toNumber(ta[`taMin${day}`]);
+
+  if (descAm === '' && high === null && low === null) return null;
 
   const rainAm = toNumber(land[split ? `rnSt${day}Am` : `rnSt${day}`]) ?? 0;
   const rainPm = toNumber(land[split ? `rnSt${day}Pm` : `rnSt${day}`]) ?? rainAm;
@@ -106,8 +123,8 @@ function readDay(land: LandItem, ta: TaItem, day: number) {
     desc: rainier,
     icon: iconFor(rainier),
     rain: Math.max(rainAm, rainPm),
-    high: toNumber(ta[`taMax${day}`]),
-    low: toNumber(ta[`taMin${day}`]),
+    high,
+    low,
   };
 }
 
@@ -135,10 +152,15 @@ export async function fetchMidForecast(
 
   const days: MidForecastDay[] = [];
   for (let day = FIRST_DAY; day <= LAST_DAY; day++) {
+    const entry = readDay(landItem, taItem, day);
+    // 발표 시각에 따라 앞쪽 하루가 통째로 비어 온다. 빈 값을 하루로 내보내면 주간 목록에
+    // 기온 없는 줄이 생긴다.
+    if (entry === null) continue;
+
     const date = new Date(baseDate);
     date.setDate(date.getDate() + day);
 
-    days.push({ date: ymd(date), dayAfter: day, ...readDay(landItem, taItem, day) });
+    days.push({ date: ymd(date), dayAfter: day, ...entry });
   }
 
   return days;
