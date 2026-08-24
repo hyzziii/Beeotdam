@@ -13,6 +13,9 @@ import { dataSources } from '@/data';
  *
  * 기관별로 묶어서 보여준다. 유형이 기관마다 달라서 서비스만 늘어놓으면 어느 조건이
  * 어디에 걸리는지 알 수 없다.
+ *
+ * 서비스 페이지는 공공누리 배지와 크리에이티브 커먼즈 배지를 나란히 건다. 같은 조건을
+ * 두 번 적은 것이라 둘을 한 줄에 병기한다.
  */
 export function DataSourceCard() {
   const styles = useStyles();
@@ -27,7 +30,10 @@ export function DataSourceCard() {
       {dataSources.map((source) => (
         <View key={source.agency} style={styles.entry}>
           <Text style={styles.agency}>{source.agency}</Text>
-          <Text style={styles.license}>{source.license}</Text>
+          <Text style={styles.license}>
+            {source.license}
+            {source.cc && ` · ${source.cc}`}
+          </Text>
 
           {source.services.map((service) => (
             <Text key={service} style={styles.service}>
