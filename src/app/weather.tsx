@@ -11,6 +11,7 @@ import { WeatherError } from '@/components/weather/weather-error';
 import { WeatherStatGrid } from '@/components/weather/weather-stat-grid';
 import { AppSpacing } from '@/constants/app-theme';
 import { findMidRegion, regionLabel } from '@/data';
+import { sunTimes } from '@/lib/sun';
 import { useSettings } from '@/settings/settings-context';
 import { useWeather } from '@/weather/weather-context';
 
@@ -23,6 +24,8 @@ export default function WeatherScreen() {
   const [mode, setMode] = useState<ForecastMode>('hourly');
 
   const forecast = data?.forecast;
+  // 일출·일몰은 API가 주지 않아 지역 좌표로 계산한다
+  const sun = sunTimes(activeRegion.lat, activeRegion.lng, new Date());
   // 목록이 오늘 것일 때만 '현재' 배지를 붙인다. 저녁에는 내일 예보를 보여준다.
   const currentHour = isToday(forecast?.hourlyDate ?? null)
     ? `${String(new Date().getHours()).padStart(2, '0')}시`
@@ -53,7 +56,7 @@ export default function WeatherScreen() {
             )}
 
             <AirQualityCard />
-            <WeatherStatGrid />
+            <WeatherStatGrid current={data?.current ?? null} sun={sun} />
           </>
         )}
       </ScrollView>

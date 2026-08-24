@@ -125,6 +125,8 @@ export interface CurrentWeather {
   rainfall: number;
   /** 풍속(m/s) */
   windSpeed: number | null;
+  /** 풍향(deg). 바람이 불어오는 방향이다. */
+  windDeg: number | null;
   /** 관측 시각 'HH:MM' */
   observedAt: string;
 }
@@ -204,6 +206,7 @@ export async function fetchCurrentWeather(grid: GridPoint, now: Date): Promise<C
     // 실황의 RN1은 숫자로 오지만, 형식이 흔들려도 견디게 같은 해석기를 쓴다
     rainfall: parseAmount(values.get('RN1')),
     windSpeed: parseNumber(values.get('WSD')),
+    windDeg: parseNumber(values.get('VEC')),
     observedAt: `${base.baseTime.slice(0, 2)}:${base.baseTime.slice(2)}`,
   };
 }

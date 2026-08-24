@@ -23,17 +23,3 @@ export const airGradeConfig: Record<AirGrade, { color: string; bg: string }> = {
     '매우 나쁨': { color: '#DC2626', bg: '#FDECEC' },
 }
 
-export interface WeatherStat {
-    icon: string
-    value: string
-    label: string
-}
-
-export const weatherStats: WeatherStat[] = [
-    { icon: '🌀', value: '4.2 m/s',   label: '풍속 · 북동풍 ENE' },
-    { icon: '💧', value: '82%',       label: '습도 · 매우 높음' },
-    { icon: '🧭', value: '1008 hPa',  label: '기압 · 평년 수준' },
-    { icon: '👁️', value: '5.2 km',    label: '가시거리 · 약간 흐림' },
-    { icon: '🌅', value: '05:54',     label: '일출 · 오전' },
-    { icon: '🌇', value: '19:28',     label: '일몰 · 오후' },
-]
