@@ -2,7 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { ApiError, ApiFailureKind } from '@/api/http';
 import { CurrentWeather, Forecast, HourlyRain, fetchCurrentWeather, fetchForecast } from '@/api/kma';
-import { Region } from '@/data';
+import { MidForecastDay, fetchMidForecast } from '@/api/kma-mid';
+import { Region, findMidRegion } from '@/data';
 import { dayExtremesKey, loadValue, saveValue, weatherCacheKey } from '@/lib/storage';
 import { useSettings } from '@/settings/settings-context';
 
@@ -10,6 +11,12 @@ import { useSettings } from '@/settings/settings-context';
 interface WeatherData {
   current: CurrentWeather;
   forecast: Forecast;
+  /**
+   * 4~7일 후 예보. 단기예보가 3일까지만 주므로 주간 목록의 뒷부분을 이걸로 채운다.
+   *
+   * 중기예보만 실패할 수 있어 따로 둔다. 그때는 주간 목록이 짧아질 뿐 나머지는 멀쩡하다.
+   */
+  mid: MidForecastDay[];
 }
 
 /**
@@ -19,7 +26,7 @@ interface WeatherData {
  * 터진다 — hourlyToday를 뒤늦게 추가했을 때 실제로 그런 일이 있었다. 번호가 다르면
  * 캐시를 버리고 새로 받는다.
  */
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 
 /** 캐시에 저장하는 형태. 언제 받은 값인지 함께 남겨야 화면에 기준 시각을 쓸 수 있다. */
 interface CachedWeather {
@@ -46,6 +53,23 @@ interface DayExtremes {
    * 들고 있어야 한다. 그날 처음 켠 시각 이전은 채울 방법이 없어 비어 있다.
    */
   hourly?: HourlyRain[];
+}
+
+/** 주간 목록 한 줄. 단기예보와 중기예보를 같은 모양으로 맞춘 것이다. */
+export interface WeeklyDay {
+  /** YYYYMMDD */
+  date: string;
+  /** '오늘' '내일' '모레' 또는 '금요일' */
+  label: string;
+  /** '월' '화' … */
+  short: string;
+  icon: string;
+  desc: string;
+  high: number | null;
+  low: number | null;
+  rain: number;
+  /** 중기예보에서 온 줄인지. 기온이 시/도 대표 도시 기준이라 밝힐 수 있어야 한다. */
+  fromMid: boolean;
 }
 
 /** 오늘 하루의 시간별 값. */
@@ -99,6 +123,8 @@ type WeatherValue = {
   today: TodayTemperature | null;
   /** 오늘 06~20시. 지나간 시각은 기억해 둔 값으로 메운다. */
   todayHourly: TodayHourly | null;
+  /** 주간 목록. 단기예보 4일 + 중기예보 3일. */
+  weekly: WeeklyDay[];
   /** 오류 화면을 지금 보여줘야 하는지. 실패했고 아직 닫지 않았을 때 true. */
   showError: boolean;
   /** 오류 화면을 닫고 가지고 있는 값을 보여준다. */
@@ -175,6 +201,81 @@ function mergeHourly(
   return { entries: [...byHour.values()].sort((a, b) => a.hour.localeCompare(b.hour)) };
 }
 
+const WEEKDAY_SHORT = ['일', '월', '화', '수', '목', '금', '토'];
+
+/** 주간 목록에 보여줄 일수. */
+const WEEKLY_DAYS = 7;
+
+function parseYmd(value: string) {
+  return new Date(
+    Number(value.slice(0, 4)),
+    Number(value.slice(4, 6)) - 1,
+    Number(value.slice(6, 8)),
+  );
+}
+
+function dayLabel(offset: number, date: Date) {
+  if (offset === 0) return '오늘';
+  if (offset === 1) return '내일';
+  if (offset === 2) return '모레';
+  return `${WEEKDAY_SHORT[date.getDay()]}요일`;
+}
+
+/**
+ * 단기예보와 중기예보를 이어 주간 목록을 만든다.
+ *
+ * 단기예보는 오늘부터 3일 후까지, 중기예보는 4일 후부터다. 날짜가 겹치면 단기 쪽을
+ * 쓴다 — 시간별 자료까지 있는 더 촘촘한 예보다.
+ *
+ * 중기예보가 없으면 목록이 짧아질 뿐이다. 빈 줄을 만들어 채우지 않는다.
+ */
+function buildWeekly(data: WeatherData, today: TodayTemperature | null, now: Date): WeeklyDay[] {
+  const todayKey = ymd(now);
+  const byDate = new Map<string, WeeklyDay>();
+
+  const start = parseYmd(todayKey).getTime();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  const put = (date: string, entry: Omit<WeeklyDay, 'date' | 'label' | 'short'>) => {
+    const parsed = parseYmd(date);
+    const offset = Math.round((parsed.getTime() - start) / dayMs);
+    if (offset < 0 || offset >= WEEKLY_DAYS) return;
+
+    byDate.set(date, {
+      date,
+      label: dayLabel(offset, parsed),
+      short: WEEKDAY_SHORT[parsed.getDay()],
+      ...entry,
+    });
+  };
+
+  // 중기를 먼저 넣고 단기로 덮는다
+  for (const day of data.mid) {
+    put(day.date, {
+      icon: day.icon,
+      desc: day.desc,
+      high: day.high,
+      low: day.low,
+      rain: day.rain,
+      fromMid: true,
+    });
+  }
+
+  for (const day of data.forecast.daily) {
+    put(day.date, {
+      icon: day.icon,
+      desc: day.desc,
+      // 오늘은 지나간 값까지 합친 쪽이 정확하다
+      high: day.date === todayKey ? (today?.high ?? day.high) : day.high,
+      low: day.date === todayKey ? (today?.low ?? day.low) : day.low,
+      rain: day.rain,
+      fromMid: false,
+    });
+  }
+
+  return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
 /**
  * 보고 있는 지역의 날씨를 받아 온다.
  *
@@ -241,15 +342,26 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const now = new Date();
-      // 실황과 예보는 서로 기다릴 필요가 없어 동시에 던진다
-      const [current, forecast] = await Promise.all([
+      const midRegion = findMidRegion(region.sido);
+
+      /*
+       * 실황·단기예보는 서로 기다릴 필요가 없어 동시에 던진다.
+       *
+       * 중기예보는 allSettled로 따로 받는다. 주간 목록 뒷부분만 담당하므로, 실패했다고
+       * 오늘 날씨까지 못 보여줄 이유가 없다.
+       */
+      const [current, forecast, midResult] = await Promise.all([
         fetchCurrentWeather(region, now),
         fetchForecast(region, now),
+        midRegion
+          ? Promise.allSettled([fetchMidForecast(midRegion, now)])
+          : Promise.resolve([]),
       ]);
 
       if (requested.current !== region.code) return;
 
-      const fresh: WeatherData = { current, forecast };
+      const mid = midResult[0]?.status === 'fulfilled' ? midResult[0].value : [];
+      const fresh: WeatherData = { current, forecast, mid };
       const stamp = now.getTime();
 
       const stored = await loadValue<DayExtremes>(extremesKey);
@@ -327,6 +439,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
       empty: !matched?.data,
       today: matched?.today ?? null,
       todayHourly: matched?.todayHourly ?? null,
+      weekly: matched?.data ? buildWeekly(matched.data, matched.today, new Date()) : [],
       showError: matched?.error != null && !matched.dismissed,
       dismissError,
       refresh,

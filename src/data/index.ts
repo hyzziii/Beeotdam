@@ -5,5 +5,6 @@
 export * from './dam-catalog'
 export * from './region-dams'
 export * from './regions'
+export * from './mid-regions'
 export * from './weather'
 export * from './settings'
