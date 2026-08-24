@@ -69,6 +69,11 @@ export function damCacheKey(damCode: string) {
   return `dam:${damCode}`;
 }
 
+/** 측정소별 대기질 캐시 키. 한 측정소가 여러 지역을 대표하므로 지역별로 두지 않는다. */
+export function airCacheKey(stationKey: string) {
+  return `air:${stationKey}`;
+}
+
 export function dayExtremesKey(regionCode: string) {
   return `day-extremes:${regionCode}`;
 }
