@@ -15,7 +15,13 @@ const KIND_LABEL = {
   watersupply: '용수전용댐',
 } as const;
 
-/** 홍수 경보 단계별 문구와 색. 팔레트에 위험색이 없어 여기서 정한다. */
+/**
+ * 홍수 경보 단계별 문구와 색. 팔레트에 위험색이 없어 여기서 정한다.
+ *
+ * 단계를 색으로 나눈다. 계획홍수위는 댐 설계 한계라 빨강, 홍수기 제한수위는 '낮춰야
+ * 하는 수위'라 주황이다. 저수율 막대와 원그래프도 같은 색을 쓴다 — 둘이 같은 값을
+ * 보여주는데 색이 다르면 고장처럼 보인다.
+ */
 const ALERT = {
   designFlood: { label: '계획홍수위 초과', color: '#DC2626', bg: '#FDECEC' },
   floodLimit: { label: '홍수기 제한수위 초과', color: '#C2410C', bg: '#FEF0E7' },
@@ -40,6 +46,7 @@ export function DamCard({ entry }: { entry: DamEntry }) {
   const current = snapshot?.current ?? null;
   // 평상시에는 null이라 아무것도 붙지 않는다
   const alert = current ? floodAlert(current.waterLevel, dam.levels) : null;
+  const gaugeColor = alert ? ALERT[alert].color : theme.accent;
   const previous = snapshot?.previousLevel ?? null;
   const delta = current && previous !== null ? current.level - previous : null;
 
@@ -63,7 +70,9 @@ export function DamCard({ entry }: { entry: DamEntry }) {
           ) : (
             <>
               <View style={styles.track}>
-                <View style={[styles.fill, { width: pct(current.level) }]} />
+                <View
+                  style={[styles.fill, { width: pct(current.level), backgroundColor: gaugeColor }]}
+                />
               </View>
 
               <View style={styles.scaleRow}>
@@ -102,7 +111,7 @@ export function DamCard({ entry }: { entry: DamEntry }) {
           {current === null ? (
             <Skeleton width={62} height={62} radius={31} />
           ) : (
-            <ReservoirRing level={current.level} color={theme.accent} />
+            <ReservoirRing level={current.level} color={gaugeColor} />
           )}
 
           {delta !== null && (
@@ -130,7 +139,7 @@ export function DamCard({ entry }: { entry: DamEntry }) {
             </Text>
           </Pressable>
 
-          {showTrend && <WeeklyTrend entry={entry} color={theme.accent} />}
+          {showTrend && <WeeklyTrend entry={entry} color={gaugeColor} />}
         </>
       )}
     </View>
