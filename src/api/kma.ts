@@ -385,6 +385,18 @@ export function toDailyForecast(items: FcstItem[], now: Date): DailyForecast[] {
 
   return [...byDate.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
+    /*
+     * 단기예보 끝에는 하루가 안 되는 조각이 붙는다. 실제로 8월 24일 02시 발표는 28일치를
+     * 한 시각만 실어 보냈다 — POP 하나뿐이고 TMX·TMN이 없다. 그걸 하루로 세면 주간 목록에서
+     * 중기예보를 덮어 그 날 기온이 사라지고, 강수확률은 한 시각 표본이 하루를 대표해 버린다.
+     *
+     * 그래서 최고·최저기온이 둘 다 없는 '앞으로의 날짜'는 버린다. 오늘은 예외로 둔다 —
+     * 늦은 시각에 받으면 최저기온이 이미 지나가 응답에 없다.
+     */
+    .filter(([date, day]) => {
+      const offset = Math.round((parseYmd(date).getTime() - today) / dayMs);
+      return offset <= 0 || day.high !== null || day.low !== null;
+    })
     .map(([date, day]) => {
       const parsed = parseYmd(date);
       const offset = Math.round((parsed.getTime() - today) / dayMs);
