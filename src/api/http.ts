@@ -83,13 +83,14 @@ interface Envelope<T> {
 /**
  * 응답 형식을 JSON으로 지정하는 방법이 기관마다 다르다.
  *
- *   기상청   dataType=JSON
- *   K-water  _type=json
+ *   기상청     dataType=JSON
+ *   K-water    _type=json
+ *   에어코리아  returnType=json
  *
  * 같은 포털인데 통일돼 있지 않아, 호출하는 쪽이 어느 쪽인지 알려줘야 한다.
  * 틀리면 오류가 아니라 XML이 조용히 돌아와 파싱에서 터진다.
  */
-export type JsonParamStyle = 'dataType' | '_type';
+export type JsonParamStyle = 'dataType' | '_type' | 'returnType';
 
 /**
  * 포털 API를 호출하고 자료 배열을 돌려준다.
@@ -110,6 +111,7 @@ export async function fetchPublicData<T>(
 
   const query = new URLSearchParams({
     serviceKey: SERVICE_KEY,
+    // 기상청만 대문자 JSON을 받는다
     [jsonParam]: jsonParam === 'dataType' ? 'JSON' : 'json',
     ...Object.fromEntries(Object.entries(params).map(([key, value]) => [key, String(value)])),
   });

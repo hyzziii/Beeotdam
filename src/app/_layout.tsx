@@ -7,6 +7,7 @@ import AppTabs from '@/components/app-tabs';
 import { SettingsProvider, useSettings } from '@/settings/settings-context';
 import { ThemeProvider, useThemeControl } from '@/theme/theme-context';
 import { DamsProvider } from '@/water/dam-context';
+import { AirProvider } from '@/weather/air-context';
 import { WeatherProvider } from '@/weather/weather-context';
 
 SplashScreen.preventAutoHideAsync();
@@ -16,9 +17,11 @@ export default function TabLayout() {
     <ThemeProvider>
       <SettingsProvider>
         <WeatherProvider>
-          <DamsProvider>
-            <ThemedApp />
-          </DamsProvider>
+          <AirProvider>
+            <DamsProvider>
+              <ThemedApp />
+            </DamsProvider>
+          </AirProvider>
         </WeatherProvider>
       </SettingsProvider>
     </ThemeProvider>
