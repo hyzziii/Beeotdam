@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Pressable } from 'react-native';
 import { createStyles, useAppTheme } from '@/theme/theme-context';
 
@@ -26,7 +26,15 @@ export function ToggleSwitch({
   const styles = useStyles();
   const theme = useAppTheme();
 
-  const progress = useRef(new Animated.Value(value ? 1 : 0)).current;
+  /*
+   * Animated.Value는 컴포넌트가 살아 있는 동안 같은 객체여야 한다. 렌더마다 새로 만들면
+   * 애니메이션이 끊긴다.
+   *
+   * useRef(...).current로 두면 렌더 중에 ref를 읽는 게 되어 규칙에 걸린다. 값을 렌더에
+   * 쓰고 있으니(interpolate 결과가 스타일로 간다) ref가 아닌 게 맞다. useState의 지연
+   * 초기화는 첫 렌더에 한 번만 만들고 그 뒤로 같은 객체를 준다.
+   */
+  const [progress] = useState(() => new Animated.Value(value ? 1 : 0));
 
   useEffect(() => {
     Animated.timing(progress, {
