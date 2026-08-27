@@ -326,7 +326,7 @@ AsyncStorage 호출은 `lib/storage.ts` 한 곳에만 있으므로, 저장소를
 
 - [x] 공공데이터 이용허락 조건 확인 후 출처 표시
 - [ ] **API 키 보호** — 지금은 앱 안에 있어 꺼내볼 수 있다. 중계 서버가 필요하다
-- [ ] 기존 린트 오류 7건 — toggle-switch의 렌더 중 ref 접근, use-color-scheme.web의 effect setState
+- [x] 린트 오류 정리 — toggle-switch의 ref 접근, use-color-scheme.web의 effect setState
 - [ ] iOS · 웹 실기기 확인 (favicon도 Expo 기본 이미지 그대로다)
 
 더 채울 것
