@@ -9,6 +9,14 @@
 >
 > 실행하려면 공공데이터포털 인증키가 필요합니다. `.env.example`을 참고하세요.
 
+| 홈 | 수자원 | 날씨 | 설정 |
+|:--:|:--:|:--:|:--:|
+| <img src="docs/screenshots/home.png" width="200"> | <img src="docs/screenshots/water.png" width="200"> | <img src="docs/screenshots/weather.png" width="200"> | <img src="docs/screenshots/settings.png" width="200"> |
+| 비 오는 날의 전남광주 북구 | 서울 강남구에 물을 대는 두 댐 | 주간 예보와 대기 환경 | 데이터 출처와 표시 설정 |
+
+화면의 숫자는 모두 그때 실제로 받아온 값입니다. 홈과 수자원의 지역이 다른 건
+지역마다 관련 댐이 다르다는 걸 함께 보이려고 그렇게 찍었습니다.
+
 ---
 
 ## 화면
@@ -72,6 +80,8 @@
 - 전국 시/군/구 254곳 — 시/도를 고른 뒤 목록에서 선택
 - 검색은 시/도를 가로질러 찾습니다 (`동탄`을 치는 데 경기도를 먼저 고를 필요가 없게)
 - **최근 본 지역**이 자동으로 쌓여 시트 위쪽에 나옵니다. 담아두는 조작은 없습니다
+
+<img src="docs/screenshots/region.png" width="240">
 
 ---
 
