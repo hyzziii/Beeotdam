@@ -21,6 +21,14 @@ jobs:
       # package-lock.json 그대로 설치한다. 버전이 멋대로 올라가면 로컬과 달라진다.
       - run: npm ci
 
+      # expo-env.d.ts는 expo start가 만드는 파일이고 gitignore 대상이라 여기엔 없다.
+      # 없으면 CSS 모듈 타입 선언이 빠져 타입 검사가 깨진다. 로컬과 같은 내용으로 만든다.
+      - name: expo 타입 참조 파일 생성
+        run: |
+          if [ ! -f expo-env.d.ts ]; then
+            echo '/// <reference types="expo/types" />' > expo-env.d.ts
+          fi
+
       - name: 린트
         run: npm run lint
 
