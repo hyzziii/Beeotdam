@@ -1,0 +1,31 @@
+name: CI
+
+# PR과 main·develop 푸시마다 돈다. 로컬에서 깜빡한 걸 여기서 잡는다.
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # package-lock.json 그대로 설치한다. 버전이 멋대로 올라가면 로컬과 달라진다.
+      - run: npm ci
+
+      - name: 린트
+        run: npm run lint
+
+      - name: 타입 검사
+        run: npm run typecheck
+
+      - name: 테스트
+        run: npm test
