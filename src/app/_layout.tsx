@@ -1,4 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from 'expo-router';
+import Head from 'expo-router/head';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
@@ -38,6 +39,18 @@ function ThemedApp() {
 
   return (
     <NavigationThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
+      {/*
+        웹 문서 제목. +html.tsx에 적으면 expo-router가 먼저 끼워 넣는 빈 <title>에 밀린다.
+        Head는 그 빈 자리를 채우는 통로다. 네이티브에서는 하는 일이 없다.
+      */}
+      <Head>
+        <title>비왔댐</title>
+        <meta
+          name="description"
+          content="내 지역의 비와 물 상황을 한눈에. 날씨 예보와 댐 저수율을 함께 봅니다."
+        />
+      </Head>
+
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <AnimatedSplashOverlay ready={themeReady && settingsReady} />
       <AppTabs />
