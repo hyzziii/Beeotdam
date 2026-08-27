@@ -17,11 +17,14 @@ export function ToggleSwitch({
   onChange,
   color,
   accessibilityLabel,
+  disabled = false,
 }: {
   value: boolean;
   onChange: (next: boolean) => void;
   color: string;
   accessibilityLabel?: string;
+  /** 아직 동작하지 않는 항목. 누를 수 없게 하고 흐리게 둔다. */
+  disabled?: boolean;
 }) {
   const styles = useStyles();
   const theme = useAppTheme();
@@ -57,10 +60,12 @@ export function ToggleSwitch({
   return (
     <Pressable
       onPress={() => onChange(!value)}
+      disabled={disabled}
       accessibilityRole="switch"
-      accessibilityState={{ checked: value }}
+      accessibilityState={{ checked: value, disabled }}
       accessibilityLabel={accessibilityLabel}
-      hitSlop={6}>
+      hitSlop={6}
+      style={disabled && styles.disabled}>
       <Animated.View style={[styles.track, { backgroundColor }]}>
         <Animated.View style={[styles.knob, { transform: [{ translateX }] }]} />
       </Animated.View>
@@ -81,5 +86,8 @@ const useStyles = createStyles((c) => ({
     height: KNOB,
     borderRadius: KNOB / 2,
     backgroundColor: '#FFFFFF',
+  },
+  disabled: {
+    opacity: 0.35,
   },
 }));
